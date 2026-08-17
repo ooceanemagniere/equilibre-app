@@ -2,7 +2,7 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f1ea"><title>Équilibre</title>
 <link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=2.2">
+<link rel="stylesheet" href="styles.css?v=3.0">
 </head><body><div class="app">
 <header class="head"><div><p id="dateLabel" class="eyebrow"></p><h1 id="pageTitle">Aujourd’hui</h1></div><div class="logo">É</div></header>
 <main>
@@ -22,21 +22,18 @@
 <div class="card">
 <div class="sectionHead inside"><h2>Apports estimés aujourd’hui</h2><span>100 % local</span></div>
 <div class="macroRows">
-<div class="macro"><div><b>Protéines</b><span id="proteinVal">0 g</span></div><div class="bar"><i id="proteinBar"></i></div><small id="proteinGoal">repère : 75–90 g</small></div>
+<div class="macro"><div><b>Protéines</b><span id="proteinVal">0 g</span></div><div class="bar"><i id="proteinBar"></i></div><small>repère : 75–90 g</small></div>
 <div class="macro"><div><b>Fibres</b><span id="fiberVal">0 g</span></div><div class="bar"><i id="fiberBar"></i></div><small>repère : ~30 g</small></div>
 <div class="macro"><div><b>Glucides</b><span id="carbVal">0 g</span></div><div class="bar"><i id="carbBar"></i></div><small>suivis sans quota strict</small></div>
 <div class="macro"><div><b>Lipides</b><span id="fatVal">0 g</span></div><div class="bar"><i id="fatBar"></i></div><small>suivis sans quota strict</small></div>
 </div>
 <div class="energyLine"><span>Énergie estimée</span><b id="kcalVal">0 kcal</b></div>
-<p class="hint">Les valeurs sont des estimations alimentaires, pas un diagnostic. Plus tu précises les quantités, plus le calcul est utile.</p>
+<p class="hint">Les valeurs sont des estimations. Plus tu précises les quantités, plus le calcul est utile.</p>
 </div>
 
 <div class="grid2 gapTop"><button class="action" id="addMealText">✏️<b>Écrire mon repas</b><small>Ex. 2 œufs, 80 g de pain...</small></button><button class="action" id="addMealPhoto">📸<b>Ajouter une photo</b><small>Photo conservée dans ton journal</small></button></div>
 
-<div class="card gapTop">
-<div class="sectionHead inside"><h2>Ce qui pourrait manquer</h2><span>Repères</span></div>
-<div id="foodGuidance" class="guidance"></div>
-</div>
+<div class="card gapTop"><div class="sectionHead inside"><h2>Ce qui pourrait manquer</h2><span>Repères</span></div><div id="foodGuidance" class="guidance"></div></div>
 
 <div class="sectionHead"><h2>Mes repas</h2><span id="foodCountLabel">0 repas</span></div><div id="mealList" class="stack"></div>
 <div class="sectionHead"><h2>Idées pour la suite</h2><button id="refreshIdeas">Changer</button></div><div id="recipeIdeas" class="stack"></div>
@@ -67,14 +64,16 @@
 <dialog id="mealDialog"><div class="modal"><div class="modalHead"><h3>Ajouter un repas</h3><button data-close="mealDialog">×</button></div>
 <label>Type<select id="mealType"><option>Petit-déjeuner</option><option>Déjeuner</option><option>Collation</option><option>Dîner</option></select></label>
 <label>Qu’as-tu mangé ?<textarea id="mealText" rows="4" placeholder="Ex. 2 œufs, 80 g de pain complet, 1 kiwi, 10 g de beurre"></textarea></label>
-<div class="examples"><small>Astuce : écris les quantités si tu les connais. Ex. “150 g de poulet”, “2 œufs”, “1 banane”.</small></div>
+<div class="examples"><small>Astuce : écris les quantités si tu les connais.</small></div>
 <label>Photo du repas<input id="mealPhotoInput" type="file" accept="image/*" capture="environment"></label>
 <label>Satiété<input id="satiety" type="range" min="1" max="5" value="3"></label>
 <div id="analysisPreview" class="analysisPreview hidden"></div>
 <button class="secondary" id="previewMeal">Analyser le repas</button>
 <button class="primary" id="saveMeal">Enregistrer</button></div></dialog>
 
+<dialog id="recipeDialog"><div class="modal"><div class="modalHead"><h3 id="recipeTitle">Recette</h3><button data-close="recipeDialog">×</button></div><div id="recipeContent"></div></div></dialog>
+
 <dialog id="workoutDialog"><div class="modal"><div class="modalHead"><h3>Ajouter une séance</h3><button data-close="workoutDialog">×</button></div><label>Type<select id="workoutType"><option>Musculation full body</option><option>Course / marche rapide</option><option>Renforcement maison</option><option>Autre</option></select></label><label>Durée<input id="workoutDuration" type="number" value="40"></label><label>Ressenti<select id="workoutFeeling"><option>Facile</option><option selected>Bien</option><option>Intense</option></select></label><button class="primary" id="saveWorkout">Enregistrer</button></div></dialog>
 <dialog id="weightDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mon poids</h3><button data-close="weightDialog">×</button></div><label>Poids (kg)<input id="weightInput" type="number" step="0.1" value="55"></label><button class="primary" id="saveWeight">Enregistrer</button></div></dialog>
 <dialog id="measureDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mes mensurations</h3><button data-close="measureDialog">×</button></div><label>Tour de taille<input id="waistInput" type="number" step="0.1"></label><label>Hanches<input id="hipsInput" type="number" step="0.1"></label><label>Cuisse<input id="thighInput" type="number" step="0.1"></label><button class="primary" id="saveMeasure">Enregistrer</button></div></dialog>
-<script src="app.js?v=2.2"></script></body></html>
+<script src="app.js?v=3.0"></script></body></html>

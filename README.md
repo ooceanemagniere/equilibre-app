@@ -1,18 +1,13 @@
-# Équilibre — V2B locale
+# Équilibre — version stable
 
-Version 0 € sans API, sans abonnement et sans serveur externe.
+Version locale, gratuite et sans API.
 
-Nouveautés :
-- analyse automatique locale des repas écrits
-- estimation kcal / protéines / glucides / lipides / fibres
-- cumul des apports sur la journée
-- conseils locaux selon les apports enregistrés
-- idées de repas adaptées à la journée
-- photos de repas conservées dans le journal
-- cache-busting `?v=2.2` pour éviter les soucis Safari
+Nouveautés de cette version stable :
+- stockage stable sous `equilibre-stable-v1`
+- migration automatique des données des versions V2A / V2B locale
+- recettes détaillées dans les idées de repas
+- suggestions adaptées aux apports de la journée
+- cache-busting v3.0 pour Safari
+- aucun abonnement, aucune carte bancaire, aucun serveur externe
 
-Limites :
-- les estimations dépendent de la précision des quantités saisies
-- la base alimentaire locale est volontairement limitée mais couvre des aliments courants
-- une photo seule n'est pas analysée automatiquement
-- ces estimations ne remplacent pas un suivi médical ou diététique
+Note : les vignettes recettes sont illustrées localement par des pictogrammes pour rester 100 % hors ligne et sans dépendance externe.
