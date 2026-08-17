@@ -1,12 +1,18 @@
-# Équilibre — V2A
+# Équilibre — V2B locale
+
+Version 0 € sans API, sans abonnement et sans serveur externe.
 
 Nouveautés :
-- 5 vrais onglets : Aujourd’hui, Alimentation, Coach, Sport, Progression
-- nouveau logo
-- ajout de photos aux repas
-- idées de repas locales
-- programme de reprise 2 séances/semaine
-- mensurations + photos de progression
-- coach local amélioré
+- analyse automatique locale des repas écrits
+- estimation kcal / protéines / glucides / lipides / fibres
+- cumul des apports sur la journée
+- conseils locaux selon les apports enregistrés
+- idées de repas adaptées à la journée
+- photos de repas conservées dans le journal
+- cache-busting `?v=2.2` pour éviter les soucis Safari
 
-Cette V2A n’utilise pas encore de véritable IA. Les données restent stockées localement dans le navigateur.
+Limites :
+- les estimations dépendent de la précision des quantités saisies
+- la base alimentaire locale est volontairement limitée mais couvre des aliments courants
+- une photo seule n'est pas analysée automatiquement
+- ces estimations ne remplacent pas un suivi médical ou diététique
