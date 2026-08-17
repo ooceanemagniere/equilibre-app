@@ -1,21 +1,12 @@
-# Équilibre — V1
+# Équilibre — V2A
 
-Une petite web-app mobile conçue pour Océane.
+Nouveautés :
+- 5 vrais onglets : Aujourd’hui, Alimentation, Coach, Sport, Progression
+- nouveau logo
+- ajout de photos aux repas
+- idées de repas locales
+- programme de reprise 2 séances/semaine
+- mensurations + photos de progression
+- coach local amélioré
 
-Fonctions incluses :
-- suivi des repas avec repères protéines / végétaux / féculents / satiété
-- objectif de 2 séances par semaine
-- suivi créatine / magnésium / isolate
-- suivi poids avec graphique de tendance
-- énergie / humeur / sommeil
-- coach local simple basé sur les données saisies
-- sauvegarde automatique dans le navigateur via localStorage
-
-## Tester sur ordinateur
-Ouvrir `index.html` dans un navigateur moderne.
-
-## L'utiliser comme une app sur iPhone
-Il faut d'abord héberger le dossier sur un site HTTPS (par ex. GitHub Pages, Netlify ou Vercel).
-Ensuite ouvrir l'URL dans Safari > Partager > Sur l'écran d'accueil.
-
-Important : cette V1 n'envoie aucune donnée sur Internet. Les données restent dans le navigateur de l'appareil.
+Cette V2A n’utilise pas encore de véritable IA. Les données restent stockées localement dans le navigateur.

@@ -1,10 +1,10 @@
 {
-  "name": "Équilibre — Océane",
+  "name": "Équilibre",
   "short_name": "Équilibre",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#f6f2eb",
-  "theme_color": "#f6f2eb",
+  "background_color": "#f5f1ea",
+  "theme_color": "#f5f1ea",
   "icons": [
     {
       "src": "icon.svg",

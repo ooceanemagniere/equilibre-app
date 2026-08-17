@@ -1,231 +1,52 @@
-<!doctype html>
-<html lang="fr">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#f6f2eb" />
-  <title>Équilibre — Océane</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icon.svg">
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div>
-        <p class="eyebrow" id="dateLabel"></p>
-        <h1>Bonjour Océane ☀️</h1>
-        <p class="subtitle">On cherche la régularité, pas la perfection.</p>
-      </div>
-      <button class="icon-btn" id="resetBtn" aria-label="Réinitialiser">↻</button>
-    </header>
+<!doctype html><html lang="fr"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f1ea"><title>Équilibre</title>
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon.svg"><link rel="stylesheet" href="styles.css">
+</head><body><div class="app">
+<header class="head"><div><p id="dateLabel" class="eyebrow"></p><h1 id="pageTitle">Aujourd’hui</h1></div><div class="logo">É</div></header>
+<main>
+<section class="screen active" data-screen="today">
+<div class="intro"><span class="pill">REPRISE · SEMAINE <span id="weekNumber">1</span>/4</span><h2>Bonjour Océane ☀️</h2><p>On cherche la régularité, pas la perfection.</p></div>
+<div class="card hero"><div class="heroTop"><div><small>OBJECTIF DE LA SEMAINE</small><h3><span id="weeklyWorkoutText">0/2</span> séances</h3><p>Deux séances suffisent pour considérer la semaine réussie.</p></div><div class="ring" id="weekRing"><span id="weekPercent">0%</span></div></div><div class="stats"><div><b id="todayMeals">0</b><small>repas</small></div><div><b id="todayRoutine">0/2</b><small>routine</small></div><div><b id="todayMood">—</b><small>humeur</small></div></div></div>
+<div class="sectionHead"><h2>Ta journée</h2><button data-go="food">Voir l’alimentation</button></div>
+<div class="grid2"><button class="action" id="quickMeal">🥗<b>Ajouter un repas</b><small>Texte ou photo</small></button><button class="action" id="quickWorkout">🏋🏼‍♀️<b>Ajouter une séance</b><small>2 minimum / semaine</small></button></div>
+<div class="sectionHead"><h2>Ressenti</h2><span>Aujourd’hui</span></div>
+<div class="card"><div class="slider"><label>Énergie</label><input id="energy" type="range" min="1" max="5" value="3"><span id="energyVal">3/5</span></div><div class="slider"><label>Humeur</label><input id="mood" type="range" min="1" max="5" value="3"><span id="moodVal">3/5</span></div><div class="slider"><label>Sommeil</label><input id="sleep" type="range" min="1" max="5" value="3"><span id="sleepVal">3/5</span></div><button class="primary" id="saveWellbeing">Enregistrer</button></div>
+<div class="sectionHead"><h2>Routine</h2><span>Simple</span></div><div class="stack"><button class="routine" data-supp="creatine"><span><b>Créatine</b><small>Régularité quotidienne</small></span><i>○</i></button><button class="routine" data-supp="magnesium"><span><b>Magnésium</b><small>Selon ta routine</small></span><i>○</i></button></div>
+<div class="sectionHead"><h2>Coach du jour</h2><button data-go="coach">Ouvrir</button></div><div class="card coachPreview">✨ <div><b id="coachPreviewTitle">Commence petit.</b><p id="coachPreviewText">Une seule action utile aujourd’hui suffit.</p></div></div>
+</section>
 
-    <main>
-      <section class="hero-card">
-        <div class="hero-row">
-          <div>
-            <span class="pill">REPRISE · SEMAINE <span id="weekNumber">1</span>/4</span>
-            <h2>Ton objectif cette semaine</h2>
-            <p><strong>2 séances minimum</strong> + des repas nourrissants + une routine simple.</p>
-          </div>
-          <div class="ring" id="weekRing"><span id="weekScore">0%</span></div>
-        </div>
-        <div class="mini-grid">
-          <div class="mini-stat"><span id="workoutCount">0/2</span><small>Séances</small></div>
-          <div class="mini-stat"><span id="mealCount">0</span><small>Repas notés</small></div>
-          <div class="mini-stat"><span id="routineCount">0/3</span><small>Routine</small></div>
-        </div>
-      </section>
+<section class="screen" data-screen="food"><div class="intro"><h2>Alimentation</h2><p>Tu notes ce que tu manges. La prochaine étape automatisera l’analyse.</p></div>
+<div class="card"><div class="sectionHead inside"><h2>Repères du jour</h2><span>V2A</span></div><div class="stats"><div>🥩<b id="proteinMeals">0</b><small>protéinés</small></div><div>🥬<b id="vegMeals">0</b><small>végétaux</small></div><div>🍚<b id="carbMeals">0</b><small>féculents</small></div></div><p class="hint">Dans la V2 intelligente, ces repères seront détectés automatiquement à partir du texte ou de la photo.</p></div>
+<div class="grid2 gapTop"><button class="action" id="addMealText">✏️<b>Écrire mon repas</b><small>Décris simplement</small></button><button class="action" id="addMealPhoto">📸<b>Ajouter une photo</b><small>Caméra ou photothèque</small></button></div>
+<div class="sectionHead"><h2>Mes repas</h2><span id="foodCountLabel">0 repas</span></div><div id="mealList" class="stack"></div>
+<div class="sectionHead"><h2>Idées pour la suite</h2><button id="refreshIdeas">Changer</button></div><div id="recipeIdeas" class="stack"></div></section>
 
-      <section>
-        <div class="section-head">
-          <h2>Aujourd’hui</h2>
-          <span class="soft-label">Comment tu te sens ?</span>
-        </div>
+<section class="screen" data-screen="coach"><div class="intro"><h2>Coach</h2><p>Interface prête pour le futur coach IA. Pour l’instant : conseils locaux selon tes données.</p></div>
+<div class="card"><small>AUJOURD’HUI</small><h3 id="coachMainTitle">Tu avances même quand la journée n’est pas parfaite.</h3><p id="coachMainText"></p></div>
+<div class="chips"><button data-prompt="motivation">Zéro motivation</button><button data-prompt="hungry">J’ai faim</button><button data-prompt="restaurant">Je mange au resto</button><button data-prompt="workout">Je n’ai que 30 min</button><button data-prompt="week">Ma semaine</button><button data-prompt="sweet">Envie de sucré</button></div>
+<div class="card"><div id="chatMessages" class="chat"><div class="bubble assistant">Écris-moi comme à un coach. Cette V2A répond déjà à quelques situations courantes.</div></div><div class="chatRow"><input id="coachInput" placeholder="Ex. J’ai raté ma séance…"><button id="sendCoach">Envoyer</button></div></div></section>
 
-        <div class="card mood-card">
-          <div class="field-row">
-            <label>Énergie</label>
-            <input id="energy" type="range" min="1" max="5" step="1" value="3">
-            <span id="energyVal">3/5</span>
-          </div>
-          <div class="field-row">
-            <label>Humeur</label>
-            <input id="mood" type="range" min="1" max="5" step="1" value="3">
-            <span id="moodVal">3/5</span>
-          </div>
-          <div class="field-row">
-            <label>Sommeil</label>
-            <input id="sleep" type="range" min="1" max="5" step="1" value="3">
-            <span id="sleepVal">3/5</span>
-          </div>
-          <button class="secondary" id="saveWellbeing">Enregistrer mon ressenti</button>
-        </div>
-      </section>
+<section class="screen" data-screen="sport"><div class="intro"><h2>Sport</h2><p>Ton programme de reprise commence à 2 séances par semaine.</p></div>
+<div class="card"><div class="sectionHead inside"><div><small>CETTE SEMAINE</small><h3 id="sportWeekTitle">0/2 séances</h3></div><span class="pill" id="sportStatusBadge">À commencer</span></div><div class="progress"><div id="sportProgress"></div></div></div>
+<div class="sectionHead"><h2>Programme reprise</h2><span>2 séances</span></div>
+<div class="program"><b>Séance A · Full body · 35–45 min</b><ul><li>Presse à cuisses · 3×10</li><li>Tirage vertical · 3×10</li><li>Hip thrust · 3×10</li><li>Chest press · 3×10</li><li>Gainage · 3×30 s</li></ul><button class="secondary addProgram" data-program="Séance A · Full body">J’ai fait cette séance</button></div>
+<div class="program"><b>Séance B · Full body + cardio · 35–45 min</b><ul><li>Goblet squat · 3×10</li><li>Rowing assis · 3×10</li><li>Step-up · 3×8 / jambe</li><li>Développé épaules · 3×10</li><li>10–15 min marche rapide</li></ul><button class="secondary addProgram" data-program="Séance B · Full body + cardio">J’ai fait cette séance</button></div>
+<div class="sectionHead"><h2>Historique</h2><button id="openCustomWorkout">+ Ajouter</button></div><div id="workoutList" class="stack"></div></section>
 
-      <section>
-        <div class="section-head">
-          <h2>Mes repas</h2>
-          <button class="text-btn" id="openMeal">+ Ajouter</button>
-        </div>
-        <div id="mealList" class="stack"></div>
-        <div class="card insight" id="foodInsight">
-          <span>🥗</span>
-          <div>
-            <strong>Petit repère</strong>
-            <p>Essaie surtout d’avoir une source de protéines, des végétaux et une portion adaptée à ta faim.</p>
-          </div>
-        </div>
-      </section>
+<section class="screen" data-screen="progress"><div class="intro"><h2>Progression</h2><p>On regarde la tendance globale, pas les variations d’un jour à l’autre.</p></div>
+<div class="metrics"><div><small>Dernier poids</small><b id="latestWeight">≈55 kg</b></div><div><small>Séances</small><b id="totalWorkouts">0</b></div><div><small>Régularité</small><b id="consistency">0%</b></div></div>
+<div class="card gapTop"><div class="sectionHead inside"><h2>Poids</h2><button id="openWeight">+ Ajouter</button></div><canvas id="weightChart" width="700" height="250"></canvas><p class="hint">Une journée isolée n’est jamais interprétée comme une réussite ou un échec.</p></div>
+<div class="sectionHead"><h2>Mensurations</h2><button id="openMeasure">+ Ajouter</button></div><div class="card measurements"><div><small>Taille</small><b id="latestWaist">—</b></div><div><small>Hanches</small><b id="latestHips">—</b></div><div><small>Cuisse</small><b id="latestThigh">—</b></div></div>
+<div class="sectionHead"><h2>Photos de progression</h2><span>Privées</span></div><div class="card"><input type="file" id="progressPhotoInput" accept="image/*" hidden><button class="photoUpload" id="addProgressPhoto">＋<b>Ajouter une photo</b><small>Face, profil ou dos</small></button><div id="progressPhotos" class="photoGrid"></div></div>
+<div class="card gapTop"><small>DEPUIS QUE J’AI COMMENCÉ ❤️</small><h3 id="sinceText">Tes progrès apparaîtront ici avec le temps.</h3></div></section>
+</main>
 
-      <section>
-        <div class="section-head">
-          <h2>Sport</h2>
-          <button class="text-btn" id="openWorkout">+ Séance</button>
-        </div>
-        <div class="card">
-          <div class="progress-line">
-            <div>
-              <strong id="sportHeadline">0 séance cette semaine</strong>
-              <p>Objectif minimum : 2</p>
-            </div>
-            <span class="badge" id="sportBadge">À commencer</span>
-          </div>
-          <div class="progress-track"><div id="sportProgress" class="progress-fill"></div></div>
-          <div id="workoutList" class="history"></div>
-        </div>
-      </section>
+<nav class="tabbar"><button class="active" data-tab="today">⌂<small>Aujourd’hui</small></button><button data-tab="food">◒<small>Alimentation</small></button><button data-tab="coach">✦<small>Coach</small></button><button data-tab="sport">◇<small>Sport</small></button><button data-tab="progress">↗<small>Progression</small></button></nav>
+</div>
 
-      <section>
-        <div class="section-head">
-          <h2>Ma routine</h2>
-          <span class="soft-label">Sans pression</span>
-        </div>
-        <div class="card routine-grid">
-          <button class="check-card" data-supp="creatine"><span>Créatine</span><b>○</b></button>
-          <button class="check-card" data-supp="magnesium"><span>Magnésium</span><b>○</b></button>
-          <button class="check-card" data-supp="isolate"><span>Isolate</span><b>○</b></button>
-        </div>
-        <p class="microcopy">L’isolate sert surtout à compléter tes protéines quand nécessaire, pas à “cocher une case” à tout prix.</p>
-      </section>
-
-      <section>
-        <div class="section-head">
-          <h2>Progression</h2>
-          <button class="text-btn" id="openWeight">+ Poids</button>
-        </div>
-        <div class="card stats-card">
-          <div class="big-stat">
-            <small>Dernier poids</small>
-            <strong id="latestWeight">≈ 55 kg</strong>
-          </div>
-          <div class="small-stat">
-            <small>Tendance</small>
-            <strong id="weightTrend">—</strong>
-          </div>
-          <div class="small-stat">
-            <small>Régularité</small>
-            <strong id="consistency">0%</strong>
-          </div>
-          <canvas id="weightChart" width="640" height="220"></canvas>
-        </div>
-      </section>
-
-      <section>
-        <div class="section-head">
-          <h2>Mon coach</h2>
-          <span class="soft-label">Version 1</span>
-        </div>
-        <div class="card coach-card">
-          <p id="coachMessage">Commence petit : aujourd’hui, une seule action utile suffit.</p>
-          <div class="quick-actions">
-            <button data-coach="motivation">Zéro motivation</button>
-            <button data-coach="food">J’ai faim</button>
-            <button data-coach="week">Ma semaine</button>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <nav class="bottom-nav">
-      <a href="#top" class="active">Aujourd’hui</a>
-      <a href="#foodInsight">Repas</a>
-      <a href="#sportHeadline">Sport</a>
-      <a href="#latestWeight">Progrès</a>
-    </nav>
-  </div>
-
-  <dialog id="mealDialog">
-    <form method="dialog" class="modal-card" id="mealForm">
-      <h3>Ajouter un repas</h3>
-      <label>Type
-        <select id="mealType">
-          <option>Petit-déjeuner</option>
-          <option>Déjeuner</option>
-          <option>Collation</option>
-          <option>Dîner</option>
-        </select>
-      </label>
-      <label>Qu’as-tu mangé ?
-        <textarea id="mealText" rows="4" placeholder="Ex. poulet, riz, courgettes, parmesan..."></textarea>
-      </label>
-      <div class="quality-row">
-        <label><input type="checkbox" id="mealProtein"> Protéines</label>
-        <label><input type="checkbox" id="mealVeg"> Végétaux</label>
-        <label><input type="checkbox" id="mealCarb"> Féculents</label>
-      </div>
-      <label>Satiété après le repas
-        <input id="satiety" type="range" min="1" max="5" value="3">
-      </label>
-      <div class="modal-actions">
-        <button value="cancel" class="ghost">Annuler</button>
-        <button type="button" id="saveMeal">Enregistrer</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="workoutDialog">
-    <form method="dialog" class="modal-card">
-      <h3>Ajouter une séance</h3>
-      <label>Type
-        <select id="workoutType">
-          <option>Musculation full body</option>
-          <option>Course / marche rapide</option>
-          <option>Renforcement maison</option>
-          <option>Autre</option>
-        </select>
-      </label>
-      <label>Durée (minutes)
-        <input id="workoutDuration" type="number" min="5" max="240" value="45">
-      </label>
-      <label>Ressenti
-        <select id="workoutFeeling">
-          <option>Facile</option>
-          <option selected>Bien</option>
-          <option>Intense</option>
-        </select>
-      </label>
-      <div class="modal-actions">
-        <button value="cancel" class="ghost">Annuler</button>
-        <button type="button" id="saveWorkout">Enregistrer</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="weightDialog">
-    <form method="dialog" class="modal-card">
-      <h3>Ajouter mon poids</h3>
-      <label>Poids (kg)
-        <input id="weightInput" type="number" min="35" max="150" step="0.1" value="55">
-      </label>
-      <p class="microcopy">Une variation sur 24 h ne veut presque rien dire. On regarde surtout la tendance.</p>
-      <div class="modal-actions">
-        <button value="cancel" class="ghost">Annuler</button>
-        <button type="button" id="saveWeight">Enregistrer</button>
-      </div>
-    </form>
-  </dialog>
-
-  <script src="app.js"></script>
-</body>
-</html>
+<dialog id="mealDialog"><div class="modal"><div class="modalHead"><h3>Ajouter un repas</h3><button data-close="mealDialog">×</button></div><label>Type<select id="mealType"><option>Petit-déjeuner</option><option>Déjeuner</option><option>Collation</option><option>Dîner</option></select></label><label>Qu’as-tu mangé ?<textarea id="mealText" rows="4" placeholder="Ex. 2 œufs, 2 tartines, un kiwi..."></textarea></label><label>Photo du repas<input id="mealPhotoInput" type="file" accept="image/*" capture="environment"></label><div class="manual"><p>Pour cette V2A seulement :</p><label><input type="checkbox" id="mealProtein"> Protéines</label><label><input type="checkbox" id="mealVeg"> Végétaux</label><label><input type="checkbox" id="mealCarb"> Féculents</label></div><label>Satiété<input id="satiety" type="range" min="1" max="5" value="3"></label><button class="primary" id="saveMeal">Enregistrer</button></div></dialog>
+<dialog id="workoutDialog"><div class="modal"><div class="modalHead"><h3>Ajouter une séance</h3><button data-close="workoutDialog">×</button></div><label>Type<select id="workoutType"><option>Musculation full body</option><option>Course / marche rapide</option><option>Renforcement maison</option><option>Autre</option></select></label><label>Durée<input id="workoutDuration" type="number" value="40"></label><label>Ressenti<select id="workoutFeeling"><option>Facile</option><option selected>Bien</option><option>Intense</option></select></label><button class="primary" id="saveWorkout">Enregistrer</button></div></dialog>
+<dialog id="weightDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mon poids</h3><button data-close="weightDialog">×</button></div><label>Poids (kg)<input id="weightInput" type="number" step="0.1" value="55"></label><button class="primary" id="saveWeight">Enregistrer</button></div></dialog>
+<dialog id="measureDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mes mensurations</h3><button data-close="measureDialog">×</button></div><label>Tour de taille<input id="waistInput" type="number" step="0.1"></label><label>Hanches<input id="hipsInput" type="number" step="0.1"></label><label>Cuisse<input id="thighInput" type="number" step="0.1"></label><button class="primary" id="saveMeasure">Enregistrer</button></div></dialog>
+<script src="app.js"></script></body></html>
