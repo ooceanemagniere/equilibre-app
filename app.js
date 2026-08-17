@@ -1,13 +1,30 @@
 
-const KEY='equilibre-stable-v1';
-const LEGACY=['equilibre-v2b-local','equilibre-v2a'];
-const D={startDate:new Date().toISOString(),meals:[],workouts:[],weights:[{date:new Date().toISOString(),value:55}],measurements:[],wellbeing:{},supplements:{},progressPhotos:[]};
-let data=JSON.parse(localStorage.getItem(KEY)||'null');
-if(!data){for(const k of LEGACY){const old=JSON.parse(localStorage.getItem(k)||'null');if(old){data=old;break}}}
-data=data||D;localStorage.setItem(KEY,JSON.stringify(data));
-const $=id=>document.getElementById(id),today=()=>new Date().toISOString().slice(0,10),save=()=>{localStorage.setItem(KEY,JSON.stringify(data));render()};
-const weekStart=()=>{const d=new Date(),n=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d},thisWeek=iso=>new Date(iso)>=weekStart();
+const STABLE_KEY='equilibre-stable';
+const OLD_KEYS=['equilibre-v2b-local','equilibre-v2a','equilibre-oceane-v1'];
+const DEFAULT={startDate:new Date().toISOString(),meals:[],workouts:[],weights:[{date:new Date().toISOString(),value:55}],measurements:[],wellbeing:{},supplements:{},progressPhotos:[]};
+
+function loadData(){
+  const stable=localStorage.getItem(STABLE_KEY);
+  if(stable) return JSON.parse(stable);
+  for(const k of OLD_KEYS){
+    const old=localStorage.getItem(k);
+    if(old){
+      const parsed=JSON.parse(old);
+      localStorage.setItem(STABLE_KEY,JSON.stringify(parsed));
+      return parsed;
+    }
+  }
+  return structuredClone(DEFAULT);
+}
+let data=loadData();
+const $=id=>document.getElementById(id);
+const today=()=>new Date().toISOString().slice(0,10);
+const save=()=>{localStorage.setItem(STABLE_KEY,JSON.stringify(data));render()};
+const weekStart=()=>{const d=new Date(),n=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d};
+const thisWeek=iso=>new Date(iso)>=weekStart();
 const esc=s=>(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+const round=x=>Math.round((x||0)*10)/10;
+
 const FOOD=[
 {name:'œuf',aliases:['oeuf','œuf','oeufs','œufs'],unit:'piece',piece:60,kcal:143,p:12.6,c:0.7,f:9.5,fi:0},
 {name:'blanc d’œuf',aliases:["blanc d'oeuf",'blanc d’œuf'],unit:'piece',piece:33,kcal:52,p:10.9,c:0.7,f:0.2,fi:0},
@@ -22,15 +39,15 @@ const FOOD=[
 {name:'ananas',aliases:['ananas'],kcal:50,p:0.5,c:13.1,f:0.1,fi:1.4},
 {name:'poulet',aliases:['poulet','blanc de poulet','escalope de poulet'],kcal:165,p:31,c:0,f:3.6,fi:0},
 {name:'dinde',aliases:['dinde','escalope de dinde'],kcal:135,p:29,c:0,f:1.6,fi:0},
-{name:'jambon',aliases:['jambon'],unit:'slice',piece:40,kcal:145,p:21,c:1.5,f:6,fi:0},
+{name:'jambon',aliases:['jambon'],unit:'piece',piece:40,kcal:145,p:21,c:1.5,f:6,fi:0},
 {name:'saumon',aliases:['saumon'],kcal:208,p:20,c:0,f:13,fi:0},
 {name:'thon',aliases:['thon'],kcal:132,p:29,c:0,f:1.3,fi:0},
 {name:'steak haché 5%',aliases:['steak hache 5','steak haché 5','steak hache','steak haché'],kcal:137,p:21,c:0,f:5,fi:0},
 {name:'tofu',aliases:['tofu'],kcal:144,p:17,c:2.8,f:8.7,fi:2.3},
-{name:'skyr',aliases:['skyr'],unit:'pot',piece:140,kcal:63,p:11,c:4,f:0.2,fi:0},
+{name:'skyr',aliases:['skyr'],unit:'piece',piece:140,kcal:63,p:11,c:4,f:0.2,fi:0},
 {name:'fromage blanc',aliases:['fromage blanc'],kcal:74,p:8,c:4.5,f:2.5,fi:0},
-{name:'yaourt grec',aliases:['yaourt grec'],unit:'pot',piece:150,kcal:97,p:9,c:3.9,f:5,fi:0},
-{name:'isolate',aliases:['isolate','whey isolate','whey'],unit:'scoop',piece:30,kcal:370,p:85,c:4,f:2,fi:0},
+{name:'yaourt grec',aliases:['yaourt grec'],unit:'piece',piece:150,kcal:97,p:9,c:3.9,f:5,fi:0},
+{name:'isolate',aliases:['isolate','whey isolate','whey'],unit:'piece',piece:30,kcal:370,p:85,c:4,f:2,fi:0},
 {name:'riz cuit',aliases:['riz cuit','riz'],kcal:130,p:2.7,c:28.2,f:0.3,fi:0.4},
 {name:'pâtes cuites',aliases:['pates cuites','pâtes cuites','pates','pâtes'],kcal:158,p:5.8,c:30.9,f:0.9,fi:1.8},
 {name:'semoule cuite',aliases:['semoule','couscous'],kcal:112,p:3.8,c:23.2,f:0.2,fi:1.4},
@@ -56,33 +73,137 @@ const FOOD=[
 {name:'chocolat noir',aliases:['chocolat noir','chocolat'],kcal:598,p:7.8,c:45.9,f:42.6,fi:10.9},
 {name:'lait demi-écrémé',aliases:['lait','lait demi ecreme','lait demi-écrémé'],kcal:46,p:3.2,c:4.8,f:1.6,fi:0},
 {name:'miel',aliases:['miel'],kcal:304,p:0.3,c:82.4,f:0,fi:0}
-];;
+];
 function norm(s){return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/œ/g,'oe').replace(/[’']/g,"'")}
-function qtyFor(segment,food){const s=norm(segment);let m=s.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|ml|cl)\b/);if(m){let v=parseFloat(m[1].replace(',','.')),u=m[2];if(u==='kg')v*=1000;if(u==='cl')v*=10;return v}m=s.match(/(\d+(?:[.,]\d+)?)\s*(?:x\s*)?(?:oeufs?|kiwis?|bananes?|pommes?|oranges?|tomates?|poivrons?|carottes?|avocats?|pots?|doses?|scoops?|tranches?|tartines?)/);if(m)return parseFloat(m[1].replace(',','.'))*(food.piece||100);m=s.match(/\b(\d+(?:[.,]\d+)?)\b/);if(m&&food.unit==='piece')return parseFloat(m[1].replace(',','.'))*(food.piece||100);if(food.unit==='piece')return food.piece||100;const d={'beurre':10,'huile olive':10,'parmesan':20,'feta':30,'amandes':25,'noix':25,'chocolat noir':20,'isolate':30,'pain':60,'pain complet':60,'skyr':140,'yaourt grec':150,'fromage blanc':150};return d[food.name]||100}
-function analyze(text){const parts=text.split(/[,;+\n]|\bet\b/gi).map(s=>s.trim()).filter(Boolean),found=[];for(const part of parts){const np=norm(part);let best=null;for(const f of FOOD){for(const a of f.aliases){if(np.includes(norm(a))&&(!best||a.length>best.alias.length))best={food:f,alias:a}}}if(best){const g=qtyFor(part,best.food),k=g/100,f=best.food;found.push({name:f.name,g:Math.round(g),kcal:f.kcal*k,p:f.p*k,c:f.c*k,fat:f.f*k,fi:f.fi*k})}}const total=found.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.p,c:a.c+x.c,fat:a.fat+x.fat,fi:a.fi+x.fi}),{kcal:0,p:0,c:0,fat:0,fi:0});Object.keys(total).forEach(k=>total[k]=Math.round(total[k]*10)/10);return{found,total}}
-function dayTotals(meals){return meals.reduce((a,m)=>{const t=m.nutrition||{};a.kcal+=(t.kcal||0);a.p+=(t.p||0);a.c+=(t.c||0);a.fat+=(t.fat||0);a.fi+=(t.fi||0);return a},{kcal:0,p:0,c:0,fat:0,fi:0})}
-const round=x=>Math.round(x*10)/10,titles={today:'Aujourd’hui',food:'Alimentation',coach:'Coach',sport:'Sport',progress:'Progression'};
+function qtyFor(segment,food){
+ const s=norm(segment);let m=s.match(/(\d+(?:[.,]\d+)?)\s*(kg|g|ml|cl)\b/);
+ if(m){let v=parseFloat(m[1].replace(',','.'));if(m[2]==='kg')v*=1000;if(m[2]==='cl')v*=10;return v}
+ m=s.match(/\b(\d+(?:[.,]\d+)?)\b/);if(m&&food.unit==='piece')return parseFloat(m[1].replace(',','.'))*(food.piece||100);
+ if(food.unit==='piece')return food.piece||100;
+ const defs={'beurre':10,'huile olive':10,'parmesan':20,'feta':30,'amandes':25,'noix':25,'chocolat noir':20,'isolate':30,'pain':60,'pain complet':60,'skyr':140,'yaourt grec':150,'fromage blanc':150};
+ return defs[food.name]||100;
+}
+function analyze(text){
+ const parts=text.split(/[,;+\n]|\bet\b/gi).map(s=>s.trim()).filter(Boolean),found=[];
+ for(const part of parts){const np=norm(part);let best=null;for(const f of FOOD){for(const a of f.aliases){if(np.includes(norm(a))&&(!best||a.length>best.alias.length))best={food:f,alias:a}}}if(best){const g=qtyFor(part,best.food),k=g/100,f=best.food;found.push({name:f.name,g:Math.round(g),kcal:f.kcal*k,p:f.p*k,c:f.c*k,fat:f.f*k,fi:f.fi*k})}}
+ const total=found.reduce((a,x)=>({kcal:a.kcal+x.kcal,p:a.p+x.p,c:a.c+x.c,fat:a.fat+x.fat,fi:a.fi+x.fi}),{kcal:0,p:0,c:0,fat:0,fi:0});Object.keys(total).forEach(k=>total[k]=round(total[k]));return {found,total};
+}
+function dayTotals(meals){return meals.reduce((a,m)=>{const t=m.nutrition||{};a.kcal+=t.kcal||0;a.p+=t.p||0;a.c+=t.c||0;a.fat+=t.fat||0;a.fi+=t.fi||0;return a},{kcal:0,p:0,c:0,fat:0,fi:0})}
+
+const RECIPE_BANK=[
+{title:'Poulet, semoule & légumes rôtis',meta:'25 min · complet',desc:'Simple, rassasiant et facile à ajuster selon ta faim.',ingredients:['120–150 g de poulet','120 g de semoule cuite','250 g de légumes au choix','1 c. à café d’huile d’olive','Épices, citron'],steps:['Cuire ou réchauffer la semoule.','Faire revenir le poulet avec les épices.','Rôtir ou poêler les légumes.','Assembler et ajouter citron + huile.'],nutrition:'≈ 500–600 kcal · 40 g protéines'},
+{title:'Bowl lentilles, feta, tomates & avocat',meta:'15 min · fibres',desc:'Une option fraîche et très rassasiante.',ingredients:['150 g de lentilles cuites','40 g de feta','Tomates et salade','1/2 avocat','Citron ou vinaigre'],steps:['Rincer les lentilles si besoin.','Couper les légumes et l’avocat.','Mélanger avec la feta.','Assaisonner simplement.'],nutrition:'≈ 450–550 kcal · 20 g protéines · riche en fibres'},
+{title:'Pâtes courgettes, poulet & parmesan',meta:'20 min · réconfortant',desc:'Crémeux, généreux et équilibré.',ingredients:['150 g de pâtes cuites','120 g de poulet','1 courgette','20 g de parmesan','1 c. à café d’huile'],steps:['Cuire les pâtes.','Poêler courgette + poulet.','Ajouter les pâtes et un peu d’eau de cuisson.','Finir avec le parmesan.'],nutrition:'≈ 550–650 kcal · 40 g protéines'},
+{title:'Omelette, pommes de terre & salade',meta:'15 min · rapide',desc:'Très simple quand tu ne veux pas cuisiner longtemps.',ingredients:['2 à 3 œufs','200 g de pommes de terre','Une grande salade','Tomates ou crudités','1 c. à café d’huile'],steps:['Cuire ou réchauffer les pommes de terre.','Faire l’omelette.','Préparer une grande salade.','Servir ensemble.'],nutrition:'≈ 450–550 kcal · 25 g protéines'},
+{title:'Saumon, riz & brocoli',meta:'25 min · complet',desc:'Une assiette très simple et équilibrée.',ingredients:['120–140 g de saumon','130 g de riz cuit','200 g de brocoli','Citron','Herbes'],steps:['Cuire le saumon au four ou à la poêle.','Réchauffer le riz.','Cuire le brocoli vapeur ou poêlé.','Ajouter citron et herbes.'],nutrition:'≈ 550–650 kcal · 30 g protéines'},
+{title:'Skyr, banane, avoine & amandes',meta:'5 min · collation',desc:'Parfait quand tu veux quelque chose de rapide et nourrissant.',ingredients:['150 g de skyr','1 banane','30 g de flocons d’avoine','15 g d’amandes','Cannelle'],steps:['Verser le skyr dans un bol.','Ajouter la banane en rondelles.','Ajouter avoine et amandes.','Finir avec un peu de cannelle.'],nutrition:'≈ 350–400 kcal · 22 g protéines'}
+];
+
+const QUOTES=[
+'« La régularité vaut plus que les grands élans qui ne durent pas. »',
+'« Un jour moyen peut quand même être une bonne journée. »',
+'« Ton corps n’a pas besoin d’être puni pour changer ; il a besoin d’être accompagné. »',
+'« Faire un peu aujourd’hui rend demain plus facile. »',
+'« Le progrès discret reste du progrès. »',
+'« La meilleure routine est celle que tu peux encore suivre dans une semaine compliquée. »',
+'« Manger suffisamment et bouger régulièrement sont des alliés, pas des sanctions. »'
+];
+
+const titles={today:'Aujourd’hui',food:'Alimentation',coach:'Coach',sport:'Sport',progress:'Progression'};
 function go(name){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.dataset.screen===name));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$('pageTitle').textContent=titles[name];window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>go(b.dataset.tab));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
 
-const RECIPES=[
-{id:'poulet_semoule',emoji:'🥗',title:'Poulet, semoule & légumes',meta:'25 min · complet',desc:'Simple, rassasiant et facile à ajuster.',ingredients:['120–150 g de poulet','60–80 g de semoule crue','Courgette + poivron','1 c. à café d’huile d’olive','Épices, citron'],steps:['Cuire la semoule.','Faire revenir les légumes.','Cuire le poulet avec les épices.','Assembler et finir avec citron et huile d’olive.']},
-{id:'lentilles_feta',emoji:'🥣',title:'Bowl lentilles, feta, tomates & avocat',meta:'15 min · riche en fibres',desc:'Très pratique quand les fibres sont basses.',ingredients:['150 g de lentilles cuites','40 g de feta','Tomates','1/2 avocat','Citron, herbes'],steps:['Égoutter les lentilles.','Couper les légumes et l’avocat.','Ajouter feta, citron et herbes.','Mélanger et servir frais.']},
-{id:'pates_poulet',emoji:'🍝',title:'Pâtes courgettes, poulet & parmesan',meta:'20 min · réconfortant',desc:'Un vrai repas complet pour une journée légère.',ingredients:['80 g de pâtes crues','120 g de poulet','1 courgette','15–20 g de parmesan','Ail, poivre'],steps:['Cuire les pâtes.','Faire revenir la courgette.','Ajouter le poulet émincé.','Mélanger avec les pâtes et finir au parmesan.']},
-{id:'omelette',emoji:'🍳',title:'Omelette, pommes de terre & salade',meta:'15 min · rapide',desc:'Simple, rassasiant et très adaptable.',ingredients:['2–3 œufs','200 g de pommes de terre','Salade verte','1 c. à café d’huile','Herbes'],steps:['Cuire les pommes de terre.','Préparer l’omelette.','Servir avec la salade assaisonnée.']},
-{id:'saumon_riz',emoji:'🐟',title:'Saumon, riz & brocoli',meta:'25 min · équilibré',desc:'Protéines, féculents et légumes dans une assiette simple.',ingredients:['120–150 g de saumon','60–80 g de riz cru','Brocoli','Citron, herbes'],steps:['Cuire le riz et le brocoli.','Cuire le saumon à la poêle ou au four.','Assembler avec citron et herbes.']},
-{id:'skyr_bowl',emoji:'🥣',title:'Skyr, banane, avoine & amandes',meta:'5 min · collation',desc:'Pratique pour compléter protéines et énergie.',ingredients:['140 g de skyr','1 banane','30 g de flocons d’avoine','15 g d’amandes','Cannelle'],steps:['Mettre le skyr dans un bol.','Ajouter banane, avoine, amandes et cannelle.']}
-];
-function recipeSuggestions(t){const ids=[];if(t.p<60)ids.push('poulet_semoule');if(t.fi<20)ids.push('lentilles_feta');if(t.kcal<1000)ids.push('pates_poulet');['omelette','saumon_riz','skyr_bowl'].forEach(x=>ids.push(x));return [...new Set(ids)].slice(0,3).map(id=>RECIPES.find(r=>r.id===id))}
-function foodAdvice(t){const a=[];if(t.p<55)a.push(['Protéines à renforcer','Pour la suite, pense à une vraie source de protéines : poulet, œufs, poisson, skyr, tofu ou légumineuses.']);else if(t.p<75)a.push(['Protéines en bonne voie','Un prochain repas avec une bonne source de protéines complètera facilement la journée.']);else a.push(['Protéines : belle base','Tu as déjà atteint une quantité intéressante aujourd’hui.']);if(t.fi<15)a.push(['Fibres encore basses','Ajoute si possible légumes, fruits, légumineuses ou avoine.']);else if(t.fi<25)a.push(['Fibres en bonne voie','Encore un fruit, des légumes ou des légumineuses peut aider.']);else a.push(['Fibres : très bien','Ta journée contient déjà une belle quantité de fibres.']);if(t.kcal<900)a.push(['Journée encore légère','Les apports enregistrés sont encore assez légers. Ne cherche pas à économiser ton dîner si tu as faim.']);return a.slice(0,3)}
-function coachState(w,m,wb,t){if(w>=2)return['Objectif sportif atteint ✨','Tout ce que tu fais en plus est du bonus.'];if(wb&&wb.energy<=2)return['Ton énergie est basse aujourd’hui.','Une séance courte ou du repos peut être plus cohérent qu’un gros effort forcé.'];if(m===0)return['Commence petit.','Une seule action utile aujourd’hui suffit.'];if(t.p<50)return['Ta journée a surtout besoin de simplicité.','Pour le prochain repas, pense d’abord à une vraie source de protéines.'];return['Tu construis ta routine.','Le plus important est de pouvoir recommencer demain.']}
+function foodAdvice(t){
+ const a=[];
+ if(t.p<55)a.push(['Protéines à renforcer','Pour la suite, pense à une vraie source de protéines : poulet, œufs, poisson, skyr, tofu ou légumineuses.']);
+ else if(t.p<75)a.push(['Protéines en bonne voie','Tu as déjà une bonne base. Un prochain repas avec une source de protéines complètera facilement la journée.']);
+ else a.push(['Protéines : belle base','Tu as déjà atteint une quantité intéressante aujourd’hui. Pas besoin de forcer davantage.']);
+ if(t.fi<15)a.push(['Fibres encore basses','Ajoute si possible légumes, fruits, légumineuses, avoine ou féculents complets au prochain repas.']);
+ else if(t.fi<25)a.push(['Fibres en bonne voie','Encore un fruit, des légumes ou une portion de légumineuses peut faire la différence.']);
+ else a.push(['Fibres : très bien','Ta journée contient déjà une belle quantité de fibres.']);
+ if(t.kcal<900)a.push(['Journée encore légère','Les apports enregistrés sont encore assez légers. Ne cherche pas à “économiser” ton prochain repas si tu as faim.']);
+ return a.slice(0,3);
+}
+function selectRecipes(t){
+ const out=[];
+ if(t.p<60)out.push(RECIPE_BANK[0]);
+ if(t.fi<20)out.push(RECIPE_BANK[1]);
+ if(t.kcal<1000)out.push(RECIPE_BANK[2]);
+ for(const r of RECIPE_BANK) if(!out.includes(r)) out.push(r);
+ return out.slice(0,3);
+}
+function quoteFor(wb,tot,w){
+ if(wb?.stress>=4)return '« Aujourd’hui, réduire la pression est aussi une forme de progrès. »';
+ if(wb?.energy<=2)return '« Les jours de petite énergie méritent des objectifs plus doux, pas plus de culpabilité. »';
+ if(wb?.hunger>=4&&tot.kcal<1200)return '« La faim est une information, pas un manque de volonté. »';
+ if(w>=2)return '« Tu as fait ce qui était prévu. Le reste est du bonus. »';
+ return QUOTES[new Date().getDate()%QUOTES.length];
+}
+function coachState(w,m,wb,t){
+ if(wb?.stress>=4)return['Aujourd’hui, ton objectif peut être de faire moins — mais mieux.','Ton stress est élevé. Garde les décisions simples : un repas rassasiant, un peu d’air si ça te fait du bien, et aucune obligation de “rentabiliser” la journée.'];
+ if(wb?.energy<=2&&wb?.soreness>=4)return['Ton corps te demande probablement une journée plus douce.','Énergie basse + fortes courbatures : marche tranquille, mobilité ou repos sont parfaitement cohérents aujourd’hui.'];
+ if(wb?.hunger>=4&&t.kcal<1200)return['Ta faim mérite d’être écoutée.','Tes apports enregistrés semblent encore légers et ta faim est haute. Cherche un vrai repas ou une collation complète plutôt que d’essayer de tenir.'];
+ if(w>=2)return['Objectif sportif atteint ✨','Tes deux séances de renforcement sont faites. Une marche ou une autre activité peut être agréable, mais tu n’as rien à rattraper.'];
+ if(m===0)return['Commence petit.','Une seule action utile aujourd’hui suffit : noter un repas, marcher un peu ou planifier ta prochaine séance.'];
+ if(t.p<50)return['Ta journée a surtout besoin de simplicité.','Pour le prochain repas, pense d’abord à une source de protéines et à quelque chose qui te rassasie vraiment.'];
+ return['Tu construis ta routine.','Le plus important n’est pas d’être parfaite aujourd’hui, mais de pouvoir recommencer demain.'];
+}
 function drawWeight(ws){const c=$('weightChart'),x=c.getContext('2d'),w=c.width,h=c.height;x.clearRect(0,0,w,h);x.strokeStyle='#ded7cd';x.lineWidth=2;x.beginPath();x.moveTo(24,h-30);x.lineTo(w-24,h-30);x.stroke();if(ws.length<2)return;const vals=ws.map(o=>o.value),min=Math.min(...vals)-.5,max=Math.max(...vals)+.5,pts=vals.map((v,i)=>({x:35+i*(w-70)/(vals.length-1),y:22+(max-v)*(h-70)/(max-min)}));x.strokeStyle='#786e60';x.lineWidth=5;x.lineCap='round';x.lineJoin='round';x.beginPath();pts.forEach((p,i)=>i?x.lineTo(p.x,p.y):x.moveTo(p.x,p.y));x.stroke();x.fillStyle='#24211d';pts.forEach(p=>{x.beginPath();x.arc(p.x,p.y,5,0,Math.PI*2);x.fill()})}
-function render(){const now=new Date(),days=Math.max(0,Math.floor((now-new Date(data.startDate))/86400000)),ww=data.workouts.filter(w=>thisWeek(w.date)),tm=data.meals.filter(m=>m.date.slice(0,10)===today()),supp=data.supplements[today()]||{},routine=['creatine','magnesium'].filter(k=>supp[k]).length,wb=data.wellbeing[today()],tot=dayTotals(tm);$('dateLabel').textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});$('weekNumber').textContent=Math.min(4,Math.floor(days/7)+1);const pct=Math.min(100,Math.round((Math.min(ww.length,2)/2)*70+Math.min(tm.length,3)/3*20+routine/2*10));$('weeklyWorkoutText').textContent=`${ww.length}/2`;$('weekPercent').textContent=`${pct}%`;$('weekRing').style.background=`conic-gradient(var(--accent) ${pct*3.6}deg,var(--soft) ${pct*3.6}deg)`;$('todayMeals').textContent=tm.length;$('todayRoutine').textContent=`${routine}/2`;$('todayMood').textContent=wb?`${wb.mood}/5`:'—';if(wb)['energy','mood','sleep'].forEach(k=>{$(k).value=wb[k];$(k+'Val').textContent=`${wb[k]}/5`});document.querySelectorAll('.routine').forEach(b=>{const d=!!supp[b.dataset.supp];b.classList.toggle('done',d);b.querySelector('i').textContent=d?'✓':'○'});$('proteinVal').textContent=`${round(tot.p)} g`;$('fiberVal').textContent=`${round(tot.fi)} g`;$('carbVal').textContent=`${round(tot.c)} g`;$('fatVal').textContent=`${round(tot.fat)} g`;$('kcalVal').textContent=`${Math.round(tot.kcal)} kcal`;$('proteinBar').style.width=`${Math.min(100,tot.p/80*100)}%`;$('fiberBar').style.width=`${Math.min(100,tot.fi/30*100)}%`;$('carbBar').style.width=`${Math.min(100,tot.c/220*100)}%`;$('fatBar').style.width=`${Math.min(100,tot.fat/70*100)}%`;$('foodGuidance').innerHTML=foodAdvice(tot).map(x=>`<div class="guide"><b>${x[0]}</b>${x[1]}</div>`).join('');$('foodCountLabel').textContent=`${tm.length} repas`;$('mealList').innerHTML=tm.length?tm.slice().reverse().map(m=>`<div class="mealItem"><div class="mealTop"><b>${m.type}</b><small>${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</small></div>${m.photo?`<img class="mealPhoto" src="${m.photo}">`:''}<p>${esc(m.text)}</p>${m.nutrition?`<div class="mealMacros"><span><b>${Math.round(m.nutrition.kcal)}</b>kcal</span><span><b>${round(m.nutrition.p)}g</b>prot.</span><span><b>${round(m.nutrition.c)}g</b>gluc.</span><span><b>${round(m.nutrition.fat)}g</b>lip.</span><span><b>${round(m.nutrition.fi)}g</b>fibres</span></div>`:''}</div>`).join(''):'<div class="empty">Aucun repas noté aujourd’hui.</div>';$('recipeIdeas').innerHTML=recipeSuggestions(tot).map(r=>`<div class="recipe"><button class="recipeOpen" data-recipe="${r.id}"><div class="recipeThumb">${r.emoji}</div><div class="recipeBody"><b>${r.title}</b><small>${r.meta}</small><p>${r.desc}</p></div></button></div>`).join('');document.querySelectorAll('.recipeOpen').forEach(b=>b.onclick=()=>openRecipe(b.dataset.recipe));$('sportWeekTitle').textContent=`${ww.length}/2 séances`;$('sportStatusBadge').textContent=ww.length>=2?'Objectif atteint ✨':ww.length===1?'Encore 1':'À commencer';$('sportProgress').style.width=`${Math.min(100,ww.length/2*100)}%`;$('workoutList').innerHTML=data.workouts.length?data.workouts.slice().reverse().slice(0,8).map(w=>`<div class="mealItem"><b>${w.type}</b><p>${new Date(w.date).toLocaleDateString('fr-FR')} · ${w.duration} min · ${w.feeling}</p></div>`).join(''):'<div class="empty">Aucune séance enregistrée.</div>';const ws=data.weights.slice(-10);$('latestWeight').textContent=ws.length?`${ws.at(-1).value.toFixed(1)} kg`:'—';$('totalWorkouts').textContent=data.workouts.length;const active=new Set([...data.meals.map(x=>x.date.slice(0,10)),...data.workouts.map(x=>x.date.slice(0,10)),...Object.keys(data.supplements)]);$('consistency').textContent=`${Math.min(100,Math.round(active.size/Math.max(1,days+1)*100))}%`;drawWeight(ws);const lm=data.measurements.at(-1);$('latestWaist').textContent=lm?.waist?`${lm.waist} cm`:'—';$('latestHips').textContent=lm?.hips?`${lm.hips} cm`:'—';$('latestThigh').textContent=lm?.thigh?`${lm.thigh} cm`:'—';$('progressPhotos').innerHTML=(data.progressPhotos||[]).slice(-6).reverse().map(p=>`<img src="${p.data}">`).join('');$('sinceText').textContent=days<3?'Tes progrès apparaîtront ici avec le temps.':`${days+1} jours de suivi · ${data.workouts.length} séance${data.workouts.length>1?'s':''} · ${data.meals.length} repas notés.`;const cs=coachState(ww.length,tm.length,wb,tot);$('coachPreviewTitle').textContent=cs[0];$('coachPreviewText').textContent=cs[1];$('coachMainTitle').textContent=cs[0];$('coachMainText').textContent=cs[1]}
-function openRecipe(id){const r=RECIPES.find(x=>x.id===id);$('recipeTitle').textContent=r.title;$('recipeContent').innerHTML=`<div class="recipeDetails"><div class="recipeMeta">${r.emoji} ${r.meta}</div><h4>Ingrédients</h4><ul>${r.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Préparation</h4><ol>${r.steps.map(x=>`<li>${x}</li>`).join('')}</ol></div>`;$('recipeDialog').showModal()}
-['energy','mood','sleep'].forEach(k=>$(k).oninput=e=>$(k+'Val').textContent=`${e.target.value}/5`);$('saveWellbeing').onclick=()=>{data.wellbeing[today()]={energy:+$('energy').value,mood:+$('mood').value,sleep:+$('sleep').value};save()};document.querySelectorAll('.routine').forEach(b=>b.onclick=()=>{data.supplements[today()]=data.supplements[today()]||{};data.supplements[today()][b.dataset.supp]=!data.supplements[today()][b.dataset.supp];save()});
-const fileData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});['quickMeal','addMealText','addMealPhoto'].forEach(id=>$(id).onclick=()=>$('mealDialog').showModal());
-function showPreview(){const a=analyze($('mealText').value);$('analysisPreview').classList.remove('hidden');$('analysisPreview').innerHTML=a.found.length?`<b>Estimation du repas</b>${a.found.map(x=>`<div class="found"><span>${x.name} · ~${x.g} g</span><span>${Math.round(x.kcal)} kcal</span></div>`).join('')}<p><b>${Math.round(a.total.kcal)} kcal</b> · ${round(a.total.p)} g prot. · ${round(a.total.c)} g gluc. · ${round(a.total.fat)} g lip. · ${round(a.total.fi)} g fibres</p>`:`<p>Je n’ai reconnu aucun aliment pour l’instant. Essaie une formulation simple avec les quantités.</p>`;return a}
-$('previewMeal').onclick=showPreview;$('saveMeal').onclick=async()=>{const f=$('mealPhotoInput').files[0],text=$('mealText').value.trim();if(!f&&!text)return;const a=analyze(text);data.meals.push({date:new Date().toISOString(),type:$('mealType').value,text,photo:f?await fileData(f):null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value});$('mealText').value='';$('mealPhotoInput').value='';$('analysisPreview').classList.add('hidden');$('mealDialog').close();save()};
-$('quickWorkout').onclick=$('openCustomWorkout').onclick=()=>$('workoutDialog').showModal();document.querySelectorAll('.addProgram').forEach(b=>b.onclick=()=>{data.workouts.push({date:new Date().toISOString(),type:b.dataset.program,duration:40,feeling:'Bien'});save()});$('saveWorkout').onclick=()=>{data.workouts.push({date:new Date().toISOString(),type:$('workoutType').value,duration:+$('workoutDuration').value,feeling:$('workoutFeeling').value});$('workoutDialog').close();save()};$('openWeight').onclick=()=>$('weightDialog').showModal();$('saveWeight').onclick=()=>{const v=+$('weightInput').value;if(v){data.weights.push({date:new Date().toISOString(),value:v});$('weightDialog').close();save()}};$('openMeasure').onclick=()=>$('measureDialog').showModal();$('saveMeasure').onclick=()=>{data.measurements.push({date:new Date().toISOString(),waist:+$('waistInput').value||null,hips:+$('hipsInput').value||null,thigh:+$('thighInput').value||null});$('measureDialog').close();save()};$('addProgressPhoto').onclick=()=>$('progressPhotoInput').click();$('progressPhotoInput').onchange=async()=>{const f=$('progressPhotoInput').files[0];if(!f)return;data.progressPhotos.push({date:new Date().toISOString(),data:await fileData(f)});$('progressPhotoInput').value='';save()};document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
-function reply(t){t=t.toLowerCase();const w=data.workouts.filter(x=>thisWeek(x.date)).length,m=data.meals.filter(x=>x.date.slice(0,10)===today()),tot=dayTotals(m);if(t.includes('motivation')||t.includes('zéro')||t.includes('zero'))return w>=2?'Ton objectif est déjà atteint cette semaine. Bouge seulement si ça te fait du bien.':'Fais une version courte : 25 à 30 minutes. Ton seul objectif est de commencer.';if(t.includes('faim'))return 'Si tu as faim, mange. Une collation avec protéines + glucides peut être une bonne option.';if(t.includes('resto'))return 'Au restaurant, choisis ce qui te fait envie. Une source de protéines + un accompagnement rassasiant suffit comme repère.';if(t.includes('30'))return 'En 30 min : échauffement, presse, tirage vertical, hip thrust, chest press, puis gainage.';if(t.includes('semaine'))return `Tu as ${w} séance${w>1?'s':''} sur 2 cette semaine. Aujourd’hui : environ ${Math.round(tot.kcal)} kcal, ${round(tot.p)} g de protéines et ${round(tot.fi)} g de fibres.`;if(t.includes('manger')||t.includes('soir')||t.includes('repas')||t.includes('food')){const r=recipeSuggestions(tot)[0];return `${foodAdvice(tot)[0][1]} Idée simple : ${r.title} (${r.meta}).`;}return 'Je peux faire le point sur ta journée, te proposer un prochain repas ou t’aider avec une séance courte.'}
-function push(role,text){const d=document.createElement('div');d.className=`bubble ${role}`;d.textContent=text;$('chatMessages').appendChild(d);$('chatMessages').scrollTop=$('chatMessages').scrollHeight}document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{push('user',b.textContent);push('assistant',reply(b.textContent))});$('sendCoach').onclick=()=>{const t=$('coachInput').value.trim();if(!t)return;push('user',t);push('assistant',reply(t));$('coachInput').value=''};$('coachInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('sendCoach').click()}};$('refreshIdeas').onclick=render;render();
+
+function render(){
+ const now=new Date(),days=Math.max(0,Math.floor((now-new Date(data.startDate))/86400000)),weekActs=data.workouts.filter(w=>thisWeek(w.date)),strength=weekActs.filter(w=>/musculation|full body|renforcement/i.test(w.type)),tm=data.meals.filter(m=>m.date.slice(0,10)===today()),supp=data.supplements[today()]||{},routine=['creatine','magnesium'].filter(k=>supp[k]).length,wb=data.wellbeing[today()],tot=dayTotals(tm);
+ $('dateLabel').textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});$('weekNumber').textContent=Math.min(4,Math.floor(days/7)+1);
+ const pct=Math.min(100,Math.round((Math.min(strength.length,2)/2)*70+Math.min(tm.length,3)/3*20+routine/2*10));$('weeklyWorkoutText').textContent=`${strength.length}/2`;$('weekPercent').textContent=`${pct}%`;$('weekRing').style.background=`conic-gradient(var(--accent) ${pct*3.6}deg,var(--soft) ${pct*3.6}deg)`;$('todayMeals').textContent=tm.length;$('todayRoutine').textContent=`${routine}/2`;$('todayMood').textContent=wb?`${wb.mood}/5`:'—';
+ if(wb)['energy','mood','sleep','stress','hunger','soreness'].forEach(k=>{if($(k)){ $(k).value=wb[k]??$(k).value;$(k+'Val').textContent=`${$(k).value}/5`}});
+ document.querySelectorAll('.routine').forEach(b=>{const d=!!supp[b.dataset.supp];b.classList.toggle('done',d);b.querySelector('i').textContent=d?'✓':'○'});
+ $('proteinVal').textContent=`${round(tot.p)} g`;$('fiberVal').textContent=`${round(tot.fi)} g`;$('carbVal').textContent=`${round(tot.c)} g`;$('fatVal').textContent=`${round(tot.fat)} g`;$('kcalVal').textContent=`${Math.round(tot.kcal)} kcal`;
+ $('proteinBar').style.width=`${Math.min(100,tot.p/80*100)}%`;$('fiberBar').style.width=`${Math.min(100,tot.fi/30*100)}%`;$('carbBar').style.width=`${Math.min(100,tot.c/220*100)}%`;$('fatBar').style.width=`${Math.min(100,tot.fat/70*100)}%`;
+ $('foodGuidance').innerHTML=foodAdvice(tot).map(x=>`<div class="guide"><b>${x[0]}</b>${x[1]}</div>`).join('');
+ $('foodCountLabel').textContent=`${tm.length} repas`;$('mealList').innerHTML=tm.length?tm.slice().reverse().map(m=>`<div class="mealItem"><div class="mealTop"><b>${m.type}</b><small>${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</small></div>${m.photo?`<img class="mealPhoto" src="${m.photo}">`:''}<p>${esc(m.text)}</p>${m.nutrition?`<div class="mealMacros"><span><b>${Math.round(m.nutrition.kcal)}</b>kcal</span><span><b>${round(m.nutrition.p)}g</b>prot.</span><span><b>${round(m.nutrition.c)}g</b>gluc.</span><span><b>${round(m.nutrition.fat)}g</b>lip.</span><span><b>${round(m.nutrition.fi)}g</b>fibres</span></div>`:''}</div>`).join(''):'<div class="empty">Aucun repas noté aujourd’hui.</div>';
+ const rs=selectRecipes(tot);$('recipeIdeas').innerHTML=rs.map((r,i)=>`<div class="recipe"><div class="recipeHeader"><div><b>${r.title}</b><small>${r.meta}</small><p>${r.desc}</p></div><button data-recipe="${i}">Recette</button></div><div class="recipeDetails" id="recipe-${i}"><h4>Ingrédients</h4><ul>${r.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Préparation</h4><ol>${r.steps.map(x=>`<li>${x}</li>`).join('')}</ol><div class="recipeNutrition"><span>${r.nutrition}</span></div></div></div>`).join('');
+ document.querySelectorAll('[data-recipe]').forEach(b=>b.onclick=()=>{const el=$('recipe-'+b.dataset.recipe);el.classList.toggle('open');b.textContent=el.classList.contains('open')?'Fermer':'Recette'});
+ $('sportWeekTitle').textContent=`${strength.length}/2 séances`;$('sportStatusBadge').textContent=strength.length>=2?'Objectif atteint ✨':strength.length===1?'Encore 1':'À commencer';$('sportProgress').style.width=`${Math.min(100,strength.length/2*100)}%`;
+ const minutes=weekActs.reduce((a,w)=>a+(+w.duration||0),0);$('movementSummary').textContent=`${minutes} min`;
+ $('workoutList').innerHTML=weekActs.length?weekActs.slice().reverse().map(w=>`<div class="mealItem"><div class="mealTop"><b>${esc(w.type)}</b><small>${new Date(w.date).toLocaleDateString('fr-FR')}</small></div><p>${w.duration} min${w.distance?` · ${w.distance} km`:''}${w.pace?` · ${esc(w.pace)}`:''} · ${esc(w.feeling||'Bien')}</p>${w.note?`<p>${esc(w.note)}</p>`:''}</div>`).join(''):'<div class="empty">Aucune activité enregistrée cette semaine.</div>';
+ const ws=data.weights.slice(-10);$('latestWeight').textContent=ws.length?`${ws.at(-1).value.toFixed(1)} kg`:'—';$('totalWorkouts').textContent=data.workouts.length;const active=new Set([...data.meals.map(x=>x.date.slice(0,10)),...data.workouts.map(x=>x.date.slice(0,10)),...Object.keys(data.supplements)]);$('consistency').textContent=`${Math.min(100,Math.round(active.size/Math.max(1,days+1)*100))}%`;drawWeight(ws);
+ const lm=data.measurements.at(-1);$('latestWaist').textContent=lm?.waist?`${lm.waist} cm`:'—';$('latestHips').textContent=lm?.hips?`${lm.hips} cm`:'—';$('latestThigh').textContent=lm?.thigh?`${lm.thigh} cm`:'—';$('progressPhotos').innerHTML=(data.progressPhotos||[]).slice(-6).reverse().map(p=>`<img src="${p.data}">`).join('');$('sinceText').textContent=days<3?'Tes progrès apparaîtront ici avec le temps.':`${days+1} jours de suivi · ${data.workouts.length} activité${data.workouts.length>1?'s':''} · ${data.meals.length} repas notés.`;
+ const cs=coachState(strength.length,tm.length,wb,tot),q=quoteFor(wb,tot,strength.length);$('coachPreviewTitle').textContent=cs[0];$('coachPreviewText').textContent=cs[1];$('coachQuote').textContent=q;$('coachMainTitle').textContent=cs[0];$('coachMainText').textContent=cs[1];$('coachMainQuote').textContent=q;
+}
+['energy','mood','sleep','stress','hunger','soreness'].forEach(k=>$(k).oninput=e=>$(k+'Val').textContent=`${e.target.value}/5`);
+$('saveWellbeing').onclick=()=>{data.wellbeing[today()]={energy:+$('energy').value,mood:+$('mood').value,sleep:+$('sleep').value,stress:+$('stress').value,hunger:+$('hunger').value,soreness:+$('soreness').value};save()};
+document.querySelectorAll('.routine').forEach(b=>b.onclick=()=>{data.supplements[today()]=data.supplements[today()]||{};data.supplements[today()][b.dataset.supp]=!data.supplements[today()][b.dataset.supp];save()});
+const fileData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
+['quickMeal','addMealText','addMealPhoto'].forEach(id=>$(id).onclick=()=>$('mealDialog').showModal());
+function showPreview(){const a=analyze($('mealText').value);$('analysisPreview').classList.remove('hidden');$('analysisPreview').innerHTML=a.found.length?`<b>Estimation du repas</b>${a.found.map(x=>`<div class="found"><span>${x.name} · ~${x.g} g</span><span>${Math.round(x.kcal)} kcal</span></div>`).join('')}<p><b>${Math.round(a.total.kcal)} kcal</b> · ${round(a.total.p)} g prot. · ${round(a.total.c)} g gluc. · ${round(a.total.fat)} g lip. · ${round(a.total.fi)} g fibres</p>`:`<p>Je n’ai reconnu aucun aliment. Essaie une formulation simple, par exemple “150 g de poulet, 120 g de riz, courgettes”.</p>`;return a}
+$('previewMeal').onclick=showPreview;
+$('saveMeal').onclick=async()=>{const f=$('mealPhotoInput').files[0],text=$('mealText').value.trim();if(!f&&!text)return;const a=analyze(text);data.meals.push({date:new Date().toISOString(),type:$('mealType').value,text,photo:f?await fileData(f):null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value});$('mealText').value='';$('mealPhotoInput').value='';$('analysisPreview').classList.add('hidden');$('mealDialog').close();save()};
+
+function openActivity(type){$('workoutType').value=type||'Autre';$('workoutDialog').showModal()}
+$('quickWorkout').onclick=$('openCustomWorkout').onclick=()=>openActivity('Autre');
+document.querySelectorAll('[data-activity]').forEach(b=>b.onclick=()=>openActivity(b.dataset.activity));
+document.querySelectorAll('.addProgram').forEach(b=>b.onclick=()=>{data.workouts.push({date:new Date().toISOString(),type:b.dataset.program,duration:40,feeling:'Bien'});save()});
+$('saveWorkout').onclick=()=>{data.workouts.push({date:new Date().toISOString(),type:$('workoutType').value,duration:+$('workoutDuration').value,distance:+$('workoutDistance').value||null,pace:$('workoutPace').value.trim(),feeling:$('workoutFeeling').value,note:$('workoutNote').value.trim()});$('workoutDialog').close();$('workoutDistance').value='';$('workoutPace').value='';$('workoutNote').value='';save()};
+$('openWeight').onclick=()=>$('weightDialog').showModal();$('saveWeight').onclick=()=>{const v=+$('weightInput').value;if(v){data.weights.push({date:new Date().toISOString(),value:v});$('weightDialog').close();save()}};
+$('openMeasure').onclick=()=>$('measureDialog').showModal();$('saveMeasure').onclick=()=>{data.measurements.push({date:new Date().toISOString(),waist:+$('waistInput').value||null,hips:+$('hipsInput').value||null,thigh:+$('thighInput').value||null});$('measureDialog').close();save()};
+$('addProgressPhoto').onclick=()=>$('progressPhotoInput').click();$('progressPhotoInput').onchange=async()=>{const f=$('progressPhotoInput').files[0];if(!f)return;data.progressPhotos=data.progressPhotos||[];data.progressPhotos.push({date:new Date().toISOString(),data:await fileData(f)});$('progressPhotoInput').value='';save()};
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
+
+function reply(raw){
+ const t=raw.toLowerCase(),week=data.workouts.filter(x=>thisWeek(x.date)),strength=week.filter(w=>/musculation|full body|renforcement/i.test(w.type)),meals=data.meals.filter(x=>x.date.slice(0,10)===today()),tot=dayTotals(meals),wb=data.wellbeing[today()]||{};
+ if(t.includes('stress')||t.includes('angoiss')||t.includes('pression'))return wb.stress>=4?'Ton stress est déjà haut aujourd’hui. Je choisirais une seule priorité : manger normalement, respirer un peu dehors si tu peux, et retirer une obligation plutôt qu’en ajouter une.':'Tu as peut-être besoin de simplifier la journée. Choisis une petite action concrète, puis laisse le reste tranquille pour l’instant.';
+ if(t.includes('motivation')||t.includes('zéro')||t.includes('zero'))return strength.length>=2?'Tes deux séances sont déjà faites : tu n’as rien à prouver aujourd’hui. Une marche si elle te fait du bien, sinon rien à rattraper.':wb.energy<=2?'Avec ton énergie basse, vise 15 à 25 minutes très faciles ou reporte sans culpabiliser. La régularité se construit aussi en adaptant.':'Fais une version courte : 25 à 30 minutes. Tu peux arrêter après l’échauffement si tu n’es toujours pas dedans.';
+ if(t.includes('faim'))return wb.hunger>=4&&tot.kcal<1200?'Ta faim est haute et tes apports enregistrés restent légers. Mange quelque chose de consistant maintenant : protéines + glucides + un fruit ou des légumes.':'Si tu as faim, mange. Essaie simplement de choisir quelque chose qui te rassasie vraiment plutôt qu’un petit truc qui te laissera encore faim.';
+ if(t.includes('repos')||t.includes('reposer')||t.includes('fatigu')||t.includes('courbature'))return wb.energy<=2||wb.soreness>=4?'Oui, une journée douce est cohérente avec ce que tu as enregistré. Une marche tranquille ou quelques étirements sont déjà suffisants si tu en as envie.':'Tu peux bouger si tu en as envie, mais tu n’as pas besoin d’une grosse séance. Une activité légère est une très bonne option.';
+ if(t.includes('resto'))return 'Au restaurant, choisis ce qui te fait envie. Garde seulement un repère simple : une source de protéines + un accompagnement qui te rassasie. Aucun besoin de compenser avant ou après.';
+ if(t.includes('30'))return 'En 30 minutes : 5 min d’échauffement, presse à cuisses, tirage vertical, hip thrust, chest press, puis 3 minutes de gainage. Court mais très valable.';
+ if(t.includes('semaine'))return `Cette semaine : ${strength.length}/2 séances de renforcement, ${week.reduce((a,w)=>a+(+w.duration||0),0)} minutes de mouvement enregistrées. Aujourd’hui : environ ${Math.round(tot.kcal)} kcal, ${round(tot.p)} g de protéines et ${round(tot.fi)} g de fibres enregistrés.`;
+ if(t.includes('manger')||t.includes('soir')||t.includes('repas')||t.includes('food')||t.includes('cuisin')){const r=selectRecipes(tot)[0];return `${foodAdvice(tot)[0][1]} Je te proposerais : ${r.title} (${r.meta}). La recette complète est dans l’onglet Alimentation.`}
+ if(t.includes('marche')||t.includes('course')||t.includes('courir'))return 'Oui, ça compte. La marche et la course n’ont pas besoin de remplacer tes deux séances de renforcement : elles complètent simplement ton mouvement selon ton énergie et ton envie.';
+ return coachState(strength.length,meals.length,wb,tot)[1]+' '+quoteFor(wb,tot,strength.length);
+}
+function push(role,text){const d=document.createElement('div');d.className=`bubble ${role}`;d.textContent=text;$('chatMessages').appendChild(d);$('chatMessages').scrollTop=$('chatMessages').scrollHeight}
+document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{push('user',b.textContent);push('assistant',reply(b.textContent))});
+$('sendCoach').onclick=()=>{const t=$('coachInput').value.trim();if(!t)return;push('user',t);push('assistant',reply(t));$('coachInput').value=''};
+$('coachInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('sendCoach').click()}};
+$('refreshIdeas').onclick=render;
+render();

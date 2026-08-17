@@ -1,13 +1,19 @@
-# Équilibre — version stable
+# Équilibre — V3 Stable
 
-Version locale, gratuite et sans API.
+Version stable, 0 €, sans API, sans abonnement et sans carte bancaire.
 
-Nouveautés de cette version stable :
-- stockage stable sous `equilibre-stable-v1`
-- migration automatique des données des versions V2A / V2B locale
-- recettes détaillées dans les idées de repas
-- suggestions adaptées aux apports de la journée
-- cache-busting v3.0 pour Safari
-- aucun abonnement, aucune carte bancaire, aucun serveur externe
+Nouveautés :
+- stockage stable `equilibre-stable` avec migration automatique des anciennes versions
+- suppression des doubles titres d’onglets
+- recettes complètes avec ingrédients, étapes et estimation nutritionnelle
+- ressenti enrichi : énergie, humeur, sommeil, stress, faim, courbatures
+- coach local plus contextuel et plus varié, avec phrases motivantes adaptées
+- activités libres : marche, course, vélo, Pilates, natation, musculation, autre
+- durée, distance, allure/vitesse, ressenti et note pour les activités
+- suivi hebdomadaire du temps de mouvement
+- cache-busting version 3.0.0 pour Safari
 
-Note : les vignettes recettes sont illustrées localement par des pictogrammes pour rester 100 % hors ligne et sans dépendance externe.
+Limites :
+- le coach reste local et basé sur des règles ; ce n’est pas une IA générative
+- la reconnaissance nutritionnelle est locale et couvre une base d’aliments courants
+- une photo seule n’est pas analysée automatiquement
