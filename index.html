@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#f6f2eb" />
+  <title>Équilibre — Océane</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow" id="dateLabel"></p>
+        <h1>Bonjour Océane ☀️</h1>
+        <p class="subtitle">On cherche la régularité, pas la perfection.</p>
+      </div>
+      <button class="icon-btn" id="resetBtn" aria-label="Réinitialiser">↻</button>
+    </header>
+
+    <main>
+      <section class="hero-card">
+        <div class="hero-row">
+          <div>
+            <span class="pill">REPRISE · SEMAINE <span id="weekNumber">1</span>/4</span>
+            <h2>Ton objectif cette semaine</h2>
+            <p><strong>2 séances minimum</strong> + des repas nourrissants + une routine simple.</p>
+          </div>
+          <div class="ring" id="weekRing"><span id="weekScore">0%</span></div>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-stat"><span id="workoutCount">0/2</span><small>Séances</small></div>
+          <div class="mini-stat"><span id="mealCount">0</span><small>Repas notés</small></div>
+          <div class="mini-stat"><span id="routineCount">0/3</span><small>Routine</small></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Aujourd’hui</h2>
+          <span class="soft-label">Comment tu te sens ?</span>
+        </div>
+
+        <div class="card mood-card">
+          <div class="field-row">
+            <label>Énergie</label>
+            <input id="energy" type="range" min="1" max="5" step="1" value="3">
+            <span id="energyVal">3/5</span>
+          </div>
+          <div class="field-row">
+            <label>Humeur</label>
+            <input id="mood" type="range" min="1" max="5" step="1" value="3">
+            <span id="moodVal">3/5</span>
+          </div>
+          <div class="field-row">
+            <label>Sommeil</label>
+            <input id="sleep" type="range" min="1" max="5" step="1" value="3">
+            <span id="sleepVal">3/5</span>
+          </div>
+          <button class="secondary" id="saveWellbeing">Enregistrer mon ressenti</button>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Mes repas</h2>
+          <button class="text-btn" id="openMeal">+ Ajouter</button>
+        </div>
+        <div id="mealList" class="stack"></div>
+        <div class="card insight" id="foodInsight">
+          <span>🥗</span>
+          <div>
+            <strong>Petit repère</strong>
+            <p>Essaie surtout d’avoir une source de protéines, des végétaux et une portion adaptée à ta faim.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Sport</h2>
+          <button class="text-btn" id="openWorkout">+ Séance</button>
+        </div>
+        <div class="card">
+          <div class="progress-line">
+            <div>
+              <strong id="sportHeadline">0 séance cette semaine</strong>
+              <p>Objectif minimum : 2</p>
+            </div>
+            <span class="badge" id="sportBadge">À commencer</span>
+          </div>
+          <div class="progress-track"><div id="sportProgress" class="progress-fill"></div></div>
+          <div id="workoutList" class="history"></div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Ma routine</h2>
+          <span class="soft-label">Sans pression</span>
+        </div>
+        <div class="card routine-grid">
+          <button class="check-card" data-supp="creatine"><span>Créatine</span><b>○</b></button>
+          <button class="check-card" data-supp="magnesium"><span>Magnésium</span><b>○</b></button>
+          <button class="check-card" data-supp="isolate"><span>Isolate</span><b>○</b></button>
+        </div>
+        <p class="microcopy">L’isolate sert surtout à compléter tes protéines quand nécessaire, pas à “cocher une case” à tout prix.</p>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Progression</h2>
+          <button class="text-btn" id="openWeight">+ Poids</button>
+        </div>
+        <div class="card stats-card">
+          <div class="big-stat">
+            <small>Dernier poids</small>
+            <strong id="latestWeight">≈ 55 kg</strong>
+          </div>
+          <div class="small-stat">
+            <small>Tendance</small>
+            <strong id="weightTrend">—</strong>
+          </div>
+          <div class="small-stat">
+            <small>Régularité</small>
+            <strong id="consistency">0%</strong>
+          </div>
+          <canvas id="weightChart" width="640" height="220"></canvas>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-head">
+          <h2>Mon coach</h2>
+          <span class="soft-label">Version 1</span>
+        </div>
+        <div class="card coach-card">
+          <p id="coachMessage">Commence petit : aujourd’hui, une seule action utile suffit.</p>
+          <div class="quick-actions">
+            <button data-coach="motivation">Zéro motivation</button>
+            <button data-coach="food">J’ai faim</button>
+            <button data-coach="week">Ma semaine</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <a href="#top" class="active">Aujourd’hui</a>
+      <a href="#foodInsight">Repas</a>
+      <a href="#sportHeadline">Sport</a>
+      <a href="#latestWeight">Progrès</a>
+    </nav>
+  </div>
+
+  <dialog id="mealDialog">
+    <form method="dialog" class="modal-card" id="mealForm">
+      <h3>Ajouter un repas</h3>
+      <label>Type
+        <select id="mealType">
+          <option>Petit-déjeuner</option>
+          <option>Déjeuner</option>
+          <option>Collation</option>
+          <option>Dîner</option>
+        </select>
+      </label>
+      <label>Qu’as-tu mangé ?
+        <textarea id="mealText" rows="4" placeholder="Ex. poulet, riz, courgettes, parmesan..."></textarea>
+      </label>
+      <div class="quality-row">
+        <label><input type="checkbox" id="mealProtein"> Protéines</label>
+        <label><input type="checkbox" id="mealVeg"> Végétaux</label>
+        <label><input type="checkbox" id="mealCarb"> Féculents</label>
+      </div>
+      <label>Satiété après le repas
+        <input id="satiety" type="range" min="1" max="5" value="3">
+      </label>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Annuler</button>
+        <button type="button" id="saveMeal">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="workoutDialog">
+    <form method="dialog" class="modal-card">
+      <h3>Ajouter une séance</h3>
+      <label>Type
+        <select id="workoutType">
+          <option>Musculation full body</option>
+          <option>Course / marche rapide</option>
+          <option>Renforcement maison</option>
+          <option>Autre</option>
+        </select>
+      </label>
+      <label>Durée (minutes)
+        <input id="workoutDuration" type="number" min="5" max="240" value="45">
+      </label>
+      <label>Ressenti
+        <select id="workoutFeeling">
+          <option>Facile</option>
+          <option selected>Bien</option>
+          <option>Intense</option>
+        </select>
+      </label>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Annuler</button>
+        <button type="button" id="saveWorkout">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="weightDialog">
+    <form method="dialog" class="modal-card">
+      <h3>Ajouter mon poids</h3>
+      <label>Poids (kg)
+        <input id="weightInput" type="number" min="35" max="150" step="0.1" value="55">
+      </label>
+      <p class="microcopy">Une variation sur 24 h ne veut presque rien dire. On regarde surtout la tendance.</p>
+      <div class="modal-actions">
+        <button value="cancel" class="ghost">Annuler</button>
+        <button type="button" id="saveWeight">Enregistrer</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
