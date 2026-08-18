@@ -24,3 +24,12 @@ Limites :
 - migration des anciennes données normalisée
 - légendes 1→5 ajoutées
 - distinction faim physique / envie de manger
+
+
+## Version 3.0.2
+- ajout du suivi d’hydratation avec une Stanley de 0,89 L
+- ajout rapide par 1/2 gourde ou gourde complète
+- suppression de l’onglet Coach
+- petit mot contextuel conservé sur l’accueil
+- bouton « Changer » corrigé pour faire réellement tourner les idées de recettes
+- navigation ramenée à 4 onglets

@@ -1,7 +1,7 @@
 
 const STABLE_KEY='equilibre-stable';
 const OLD_KEYS=['equilibre-v2b-local','equilibre-v2a','equilibre-oceane-v1'];
-const DEFAULT={startDate:new Date().toISOString(),meals:[],workouts:[],weights:[{date:new Date().toISOString(),value:55}],measurements:[],wellbeing:{},supplements:{},progressPhotos:[]};
+const DEFAULT={startDate:new Date().toISOString(),meals:[],workouts:[],weights:[{date:new Date().toISOString(),value:55}],measurements:[],wellbeing:{},supplements:{},progressPhotos:[],hydration:{}};
 
 function loadData(){
   const stable=localStorage.getItem(STABLE_KEY);
@@ -16,6 +16,7 @@ function loadData(){
   }
   return structuredClone(DEFAULT);
 }
+let recipeOffset=0;
 let data=loadData();
 function normalizeData(raw){
   const d=raw&&typeof raw==='object'?raw:{};
@@ -27,6 +28,7 @@ function normalizeData(raw){
   d.progressPhotos=Array.isArray(d.progressPhotos)?d.progressPhotos:[];
   d.wellbeing=d.wellbeing&&typeof d.wellbeing==='object'?d.wellbeing:{};
   d.supplements=d.supplements&&typeof d.supplements==='object'?d.supplements:{};
+  d.hydration=d.hydration&&typeof d.hydration==='object'?d.hydration:{};
   return d;
 }
 data=normalizeData(data);
@@ -123,7 +125,7 @@ const QUOTES=[
 '« Manger suffisamment et bouger régulièrement sont des alliés, pas des sanctions. »'
 ];
 
-const titles={today:'Aujourd’hui',food:'Alimentation',coach:'Coach',sport:'Sport',progress:'Progression'};
+const titles={today:'Aujourd’hui',food:'Alimentation',sport:'Sport',progress:'Progression'};
 function go(name){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.dataset.screen===name));document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===name));$('pageTitle').textContent=titles[name];window.scrollTo({top:0,behavior:'smooth'})}
 document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>go(b.dataset.tab));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));
 
@@ -139,12 +141,13 @@ function foodAdvice(t){
  return a.slice(0,3);
 }
 function selectRecipes(t){
- const out=[];
- if(t.p<60)out.push(RECIPE_BANK[0]);
- if(t.fi<20)out.push(RECIPE_BANK[1]);
- if(t.kcal<1000)out.push(RECIPE_BANK[2]);
- for(const r of RECIPE_BANK) if(!out.includes(r)) out.push(r);
- return out.slice(0,3);
+ const priority=[];
+ if(t.p<60)priority.push(RECIPE_BANK[0]);
+ if(t.fi<20)priority.push(RECIPE_BANK[1]);
+ if(t.kcal<1000)priority.push(RECIPE_BANK[2]);
+ const rest=RECIPE_BANK.filter(r=>!priority.includes(r));
+ const rotated=rest.slice(recipeOffset).concat(rest.slice(0,recipeOffset));
+ return [...new Set(priority.concat(rotated))].slice(0,3);
 }
 function quoteFor(wb,tot,w){
  if(wb?.stress>=4)return '« Aujourd’hui, réduire la pression est aussi une forme de progrès. »';
@@ -169,6 +172,11 @@ function render(){
  const now=new Date(),days=Math.max(0,Math.floor((now-new Date(data.startDate))/86400000)),weekActs=data.workouts.filter(w=>thisWeek(w.date)),strength=weekActs.filter(w=>/musculation|full body|renforcement/i.test(w.type)),tm=data.meals.filter(m=>m.date.slice(0,10)===today()),supp=data.supplements[today()]||{},routine=['creatine','magnesium'].filter(k=>supp[k]).length,wb=data.wellbeing[today()],tot=dayTotals(tm);
  $('dateLabel').textContent=now.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});$('weekNumber').textContent=Math.min(4,Math.floor(days/7)+1);
  const pct=Math.min(100,Math.round((Math.min(strength.length,2)/2)*70+Math.min(tm.length,3)/3*20+routine/2*10));$('weeklyWorkoutText').textContent=`${strength.length}/2`;$('weekPercent').textContent=`${pct}%`;$('weekRing').style.background=`conic-gradient(var(--accent) ${pct*3.6}deg,var(--soft) ${pct*3.6}deg)`;$('todayMeals').textContent=tm.length;$('todayRoutine').textContent=`${routine}/2`;$('todayMood').textContent=wb?`${wb.mood}/5`:'—';
+ const waterHalfUnits=(data.hydration[today()]||0),waterLiters=waterHalfUnits*0.445;
+ $('waterLiters').textContent=waterLiters.toFixed(2).replace('.',',');
+ $('waterCups').textContent=(waterHalfUnits/2).toLocaleString('fr-FR',{maximumFractionDigits:1});
+ $('waterGaugeFill').style.width=`${Math.min(100,(waterLiters/1.78)*100)}%`;
+
  if(wb)['energy','mood','sleep','stress','hunger','craving','soreness'].forEach(k=>{if($(k)){ $(k).value=wb[k]??$(k).value;$(k+'Val').textContent=`${$(k).value}/5`}});
  document.querySelectorAll('.routine').forEach(b=>{const d=!!supp[b.dataset.supp];b.classList.toggle('done',d);b.querySelector('i').textContent=d?'✓':'○'});
  $('proteinVal').textContent=`${round(tot.p)} g`;$('fiberVal').textContent=`${round(tot.fi)} g`;$('carbVal').textContent=`${round(tot.c)} g`;$('fatVal').textContent=`${round(tot.fat)} g`;$('kcalVal').textContent=`${Math.round(tot.kcal)} kcal`;
@@ -182,7 +190,10 @@ function render(){
  $('workoutList').innerHTML=weekActs.length?weekActs.slice().reverse().map(w=>`<div class="mealItem"><div class="mealTop"><b>${esc(w.type)}</b><small>${new Date(w.date).toLocaleDateString('fr-FR')}</small></div><p>${w.duration} min${w.distance?` · ${w.distance} km`:''}${w.pace?` · ${esc(w.pace)}`:''} · ${esc(w.feeling||'Bien')}</p>${w.note?`<p>${esc(w.note)}</p>`:''}</div>`).join(''):'<div class="empty">Aucune activité enregistrée cette semaine.</div>';
  const ws=data.weights.slice(-10);$('latestWeight').textContent=ws.length?`${ws.at(-1).value.toFixed(1)} kg`:'—';$('totalWorkouts').textContent=data.workouts.length;const active=new Set([...data.meals.map(x=>x.date.slice(0,10)),...data.workouts.map(x=>x.date.slice(0,10)),...Object.keys(data.supplements)]);$('consistency').textContent=`${Math.min(100,Math.round(active.size/Math.max(1,days+1)*100))}%`;drawWeight(ws);
  const lm=(data.measurements||[]).at(-1);$('latestWaist').textContent=lm?.waist?`${lm.waist} cm`:'—';$('latestHips').textContent=lm?.hips?`${lm.hips} cm`:'—';$('latestThigh').textContent=lm?.thigh?`${lm.thigh} cm`:'—';$('progressPhotos').innerHTML=(data.progressPhotos||[]).slice(-6).reverse().map(p=>`<img src="${p.data}">`).join('');$('sinceText').textContent=days<3?'Tes progrès apparaîtront ici avec le temps.':`${days+1} jours de suivi · ${data.workouts.length} activité${data.workouts.length>1?'s':''} · ${data.meals.length} repas notés.`;
- const cs=coachState(strength.length,tm.length,wb,tot),q=quoteFor(wb,tot,strength.length);$('coachPreviewTitle').textContent=cs[0];$('coachPreviewText').textContent=cs[1];$('coachQuote').textContent=q;$('coachMainTitle').textContent=cs[0];$('coachMainText').textContent=cs[1];$('coachMainQuote').textContent=q;
+ let cs=coachState(strength.length,tm.length,wb,tot),q=quoteFor(wb,tot,strength.length);
+ if(new Date().getHours()>=15 && waterLiters<0.9){
+   cs=['Petit rappel hydratation 💧','Tu as enregistré moins d’une Stanley aujourd’hui. Garde-la simplement près de toi pour la suite de la journée.'];
+ }$('coachPreviewTitle').textContent=cs[0];$('coachPreviewText').textContent=cs[1];$('coachQuote').textContent=q;
 }
 ['energy','mood','sleep','stress','hunger','craving','soreness'].forEach(k=>$(k).oninput=e=>$(k+'Val').textContent=`${e.target.value}/5`);
 $('saveWellbeing').onclick=()=>{
@@ -191,6 +202,9 @@ $('saveWellbeing').onclick=()=>{
  const n=$('wellbeingSaved');n.classList.remove('hidden');setTimeout(()=>n.classList.add('hidden'),1800);
 };
 document.querySelectorAll('.routine').forEach(b=>b.onclick=()=>{data.supplements[today()]=data.supplements[today()]||{};data.supplements[today()][b.dataset.supp]=!data.supplements[today()][b.dataset.supp];save()});
+$('addHalfWater').onclick=()=>{data.hydration[today()]=(data.hydration[today()]||0)+1;save()};
+$('addFullWater').onclick=()=>{data.hydration[today()]=(data.hydration[today()]||0)+2;save()};
+$('removeHalfWater').onclick=()=>{data.hydration[today()]=Math.max(0,(data.hydration[today()]||0)-1);save()};
 const fileData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
 ['quickMeal','addMealText','addMealPhoto'].forEach(id=>$(id).onclick=()=>$('mealDialog').showModal());
 function showPreview(){const a=analyze($('mealText').value);$('analysisPreview').classList.remove('hidden');$('analysisPreview').innerHTML=a.found.length?`<b>Estimation du repas</b>${a.found.map(x=>`<div class="found"><span>${x.name} · ~${x.g} g</span><span>${Math.round(x.kcal)} kcal</span></div>`).join('')}<p><b>${Math.round(a.total.kcal)} kcal</b> · ${round(a.total.p)} g prot. · ${round(a.total.c)} g gluc. · ${round(a.total.fat)} g lip. · ${round(a.total.fi)} g fibres</p>`:`<p>Je n’ai reconnu aucun aliment. Essaie une formulation simple, par exemple “150 g de poulet, 120 g de riz, courgettes”.</p>`;return a}
@@ -207,22 +221,5 @@ $('openMeasure').onclick=()=>$('measureDialog').showModal();$('saveMeasure').onc
 $('addProgressPhoto').onclick=()=>$('progressPhotoInput').click();$('progressPhotoInput').onchange=async()=>{const f=$('progressPhotoInput').files[0];if(!f)return;data.progressPhotos=data.progressPhotos||[];data.progressPhotos.push({date:new Date().toISOString(),data:await fileData(f)});$('progressPhotoInput').value='';save()};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 
-function reply(raw){
- const t=raw.toLowerCase(),week=data.workouts.filter(x=>thisWeek(x.date)),strength=week.filter(w=>/musculation|full body|renforcement/i.test(w.type)),meals=data.meals.filter(x=>x.date.slice(0,10)===today()),tot=dayTotals(meals),wb=data.wellbeing[today()]||{};
- if(t.includes('stress')||t.includes('angoiss')||t.includes('pression'))return wb.stress>=4?'Ton stress est déjà haut aujourd’hui. Je choisirais une seule priorité : manger normalement, respirer un peu dehors si tu peux, et retirer une obligation plutôt qu’en ajouter une.':'Tu as peut-être besoin de simplifier la journée. Choisis une petite action concrète, puis laisse le reste tranquille pour l’instant.';
- if(t.includes('motivation')||t.includes('zéro')||t.includes('zero'))return strength.length>=2?'Tes deux séances sont déjà faites : tu n’as rien à prouver aujourd’hui. Une marche si elle te fait du bien, sinon rien à rattraper.':wb.energy<=2?'Avec ton énergie basse, vise 15 à 25 minutes très faciles ou reporte sans culpabiliser. La régularité se construit aussi en adaptant.':'Fais une version courte : 25 à 30 minutes. Tu peux arrêter après l’échauffement si tu n’es toujours pas dedans.';
- if(t.includes('faim'))return wb.hunger>=4&&tot.kcal<1200?'Ta faim est haute et tes apports enregistrés restent légers. Mange quelque chose de consistant maintenant : protéines + glucides + un fruit ou des légumes.':'Si tu as faim, mange. Essaie simplement de choisir quelque chose qui te rassasie vraiment plutôt qu’un petit truc qui te laissera encore faim.';
- if(t.includes('repos')||t.includes('reposer')||t.includes('fatigu')||t.includes('courbature'))return wb.energy<=2||wb.soreness>=4?'Oui, une journée douce est cohérente avec ce que tu as enregistré. Une marche tranquille ou quelques étirements sont déjà suffisants si tu en as envie.':'Tu peux bouger si tu en as envie, mais tu n’as pas besoin d’une grosse séance. Une activité légère est une très bonne option.';
- if(t.includes('resto'))return 'Au restaurant, choisis ce qui te fait envie. Garde seulement un repère simple : une source de protéines + un accompagnement qui te rassasie. Aucun besoin de compenser avant ou après.';
- if(t.includes('30'))return 'En 30 minutes : 5 min d’échauffement, presse à cuisses, tirage vertical, hip thrust, chest press, puis 3 minutes de gainage. Court mais très valable.';
- if(t.includes('semaine'))return `Cette semaine : ${strength.length}/2 séances de renforcement, ${week.reduce((a,w)=>a+(+w.duration||0),0)} minutes de mouvement enregistrées. Aujourd’hui : environ ${Math.round(tot.kcal)} kcal, ${round(tot.p)} g de protéines et ${round(tot.fi)} g de fibres enregistrés.`;
- if(t.includes('manger')||t.includes('soir')||t.includes('repas')||t.includes('food')||t.includes('cuisin')){const r=selectRecipes(tot)[0];return `${foodAdvice(tot)[0][1]} Je te proposerais : ${r.title} (${r.meta}). La recette complète est dans l’onglet Alimentation.`}
- if(t.includes('marche')||t.includes('course')||t.includes('courir'))return 'Oui, ça compte. La marche et la course n’ont pas besoin de remplacer tes deux séances de renforcement : elles complètent simplement ton mouvement selon ton énergie et ton envie.';
- return coachState(strength.length,meals.length,wb,tot)[1]+' '+quoteFor(wb,tot,strength.length);
-}
-function push(role,text){const d=document.createElement('div');d.className=`bubble ${role}`;d.textContent=text;$('chatMessages').appendChild(d);$('chatMessages').scrollTop=$('chatMessages').scrollHeight}
-document.querySelectorAll('[data-prompt]').forEach(b=>b.onclick=()=>{push('user',b.textContent);push('assistant',reply(b.textContent))});
-$('sendCoach').onclick=()=>{const t=$('coachInput').value.trim();if(!t)return;push('user',t);push('assistant',reply(t));$('coachInput').value=''};
-$('coachInput').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('sendCoach').click()}};
-$('refreshIdeas').onclick=render;
+$('refreshIdeas').onclick=()=>{recipeOffset=(recipeOffset+3)%RECIPE_BANK.length;render()};
 render();

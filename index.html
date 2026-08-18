@@ -7,7 +7,7 @@
 <title>Équilibre</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=3.0.1">
+<link rel="stylesheet" href="styles.css?v=3.0.2">
 </head>
 <body>
 <div class="app">
@@ -63,13 +63,29 @@
     <div id="wellbeingSaved" class="savedNotice hidden">✓ Ressenti enregistré</div>
   </div>
 
+
+  <div class="sectionHead"><h2>Hydratation</h2><span>Aujourd’hui</span></div>
+  <div class="card hydrationCard">
+    <div class="hydrationTop">
+      <div><small>STANLEY · 0,89 L</small><h3><span id="waterLiters">0,00</span> L</h3><p><span id="waterCups">0</span> gourde(s) enregistrée(s)</p></div>
+      <div class="waterDrop">💧</div>
+    </div>
+    <div class="waterGauge"><i id="waterGaugeFill"></i></div>
+    <div class="waterActions">
+      <button id="addHalfWater">+ ½ gourde</button>
+      <button id="addFullWater">+ 1 gourde</button>
+      <button id="removeHalfWater">− ½</button>
+    </div>
+    <p class="hint">1 gourde complète = 0,89 L. Tu peux aussi noter des demi-gourdes.</p>
+  </div>
+
   <div class="sectionHead"><h2>Routine</h2><span>Simple</span></div>
   <div class="stack">
     <button class="routine" data-supp="creatine"><span><b>Créatine</b><small>Régularité quotidienne</small></span><i>○</i></button>
     <button class="routine" data-supp="magnesium"><span><b>Magnésium</b><small>Selon ta routine</small></span><i>○</i></button>
   </div>
 
-  <div class="sectionHead"><h2>Coach du jour</h2><button data-go="coach">Ouvrir</button></div>
+  <div class="sectionHead"><h2>Petit mot du jour</h2><span>Selon ta journée</span></div>
   <div class="card coachPreview">
     <span class="spark">✨</span>
     <div>
@@ -112,29 +128,6 @@
   <div id="recipeIdeas" class="stack"></div>
 </section>
 
-<section class="screen" data-screen="coach">
-  <div class="screenLead"><p>Coach local : il croise tes repas, tes activités, ton sommeil, ton énergie, ton stress et ta faim enregistrés sur cet appareil.</p></div>
-  <div class="card coachHero">
-    <small>AUJOURD’HUI</small>
-    <h3 id="coachMainTitle">Tu avances même quand la journée n’est pas parfaite.</h3>
-    <p id="coachMainText"></p>
-    <blockquote id="coachMainQuote"></blockquote>
-  </div>
-  <div class="chips">
-    <button data-prompt="motivation">Zéro motivation</button>
-    <button data-prompt="hungry">J’ai faim</button>
-    <button data-prompt="stress">Je suis stressée</button>
-    <button data-prompt="restaurant">Je mange au resto</button>
-    <button data-prompt="workout">Je n’ai que 30 min</button>
-    <button data-prompt="week">Ma semaine</button>
-    <button data-prompt="food">Que manger ensuite ?</button>
-    <button data-prompt="rest">Est-ce que je devrais me reposer ?</button>
-  </div>
-  <div class="card">
-    <div id="chatMessages" class="chat"><div class="bubble assistant">Parle-moi normalement. Je ne suis pas une IA générative, mais je peux croiser plusieurs signaux de ta journée et te répondre de façon personnalisée.</div></div>
-    <div class="chatRow"><input id="coachInput" placeholder="Ex. J’ai faim mais je n’ai pas envie de cuisiner…"><button id="sendCoach">Envoyer</button></div>
-  </div>
-</section>
 
 <section class="screen" data-screen="sport">
   <div class="screenLead"><p>Deux séances de renforcement par semaine restent ton objectif de base. La marche, la course et les autres activités comptent aussi dans ton mouvement global.</p></div>
@@ -184,7 +177,6 @@
 <nav class="tabbar">
   <button class="active" data-tab="today">⌂<small>Aujourd’hui</small></button>
   <button data-tab="food">◒<small>Alimentation</small></button>
-  <button data-tab="coach">✦<small>Coach</small></button>
   <button data-tab="sport">◇<small>Sport</small></button>
   <button data-tab="progress">↗<small>Progression</small></button>
 </nav>
@@ -216,6 +208,6 @@
 <dialog id="weightDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mon poids</h3><button data-close="weightDialog">×</button></div><label>Poids (kg)<input id="weightInput" type="number" step="0.1" value="55"></label><button class="primary" id="saveWeight">Enregistrer</button></div></dialog>
 <dialog id="measureDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mes mensurations</h3><button data-close="measureDialog">×</button></div><label>Tour de taille<input id="waistInput" type="number" step="0.1"></label><label>Hanches<input id="hipsInput" type="number" step="0.1"></label><label>Cuisse<input id="thighInput" type="number" step="0.1"></label><button class="primary" id="saveMeasure">Enregistrer</button></div></dialog>
 
-<script src="app.js?v=3.0.1"></script>
+<script src="app.js?v=3.0.2"></script>
 </body>
 </html>
