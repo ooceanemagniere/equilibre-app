@@ -23,3 +23,9 @@
 .recipeCategory,.recipe-category{display:none!important}
 .recipeHeader b{display:block;margin:0 0 5px}
 .recipeHeader small{margin-top:0}
+
+.waterActions{grid-template-columns:1fr 1fr!important}
+.mealTopActions{display:flex;align-items:center;gap:6px}
+.mealIconBtn{border:1px solid var(--line);background:#f7f3ed;border-radius:999px;padding:6px 9px;font-size:.75rem;color:var(--ink)}
+.mealIconBtn.delete{color:#8a4f4f}
+.mealActionRow{display:flex;gap:7px;justify-content:flex-end;margin-top:10px}

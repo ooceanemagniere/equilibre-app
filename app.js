@@ -23,6 +23,7 @@ function normalizeData(raw){
   const d=raw&&typeof raw==='object'?raw:{};
   d.startDate=d.startDate||new Date().toISOString();
   d.meals=Array.isArray(d.meals)?d.meals:[];
+  d.meals=d.meals.map((m,i)=>({...m,id:m.id||`meal-${Date.now()}-${i}-${Math.random().toString(36).slice(2,7)}`}));
   d.workouts=Array.isArray(d.workouts)?d.workouts:[];
   d.weights=Array.isArray(d.weights)&&d.weights.length?d.weights:[{date:new Date().toISOString(),value:55}];
   d.measurements=Array.isArray(d.measurements)?d.measurements:[];
@@ -203,7 +204,9 @@ function render(){
  $('proteinVal').textContent=`${round(tot.p)} g`;$('fiberVal').textContent=`${round(tot.fi)} g`;$('carbVal').textContent=`${round(tot.c)} g`;$('fatVal').textContent=`${round(tot.fat)} g`;$('kcalVal').textContent=`${Math.round(tot.kcal)} kcal`;
  $('proteinBar').style.width=`${Math.min(100,tot.p/80*100)}%`;$('fiberBar').style.width=`${Math.min(100,tot.fi/30*100)}%`;$('carbBar').style.width=`${Math.min(100,tot.c/220*100)}%`;$('fatBar').style.width=`${Math.min(100,tot.fat/70*100)}%`;
  $('foodGuidance').innerHTML=foodAdvice(tot).map(x=>`<div class="guide"><b>${x[0]}</b>${x[1]}</div>`).join('');
- $('foodCountLabel').textContent=`${tm.length} repas`;$('mealList').innerHTML=tm.length?tm.slice().reverse().map(m=>`<div class="mealItem"><div class="mealTop"><b>${m.type}</b><small>${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</small></div>${m.photo?`<img class="mealPhoto" src="${m.photo}">`:''}<p>${esc(m.text)}</p>${m.nutrition?`<div class="mealMacros"><span><b>${Math.round(m.nutrition.kcal)}</b>kcal</span><span><b>${round(m.nutrition.p)}g</b>prot.</span><span><b>${round(m.nutrition.c)}g</b>gluc.</span><span><b>${round(m.nutrition.fat)}g</b>lip.</span><span><b>${round(m.nutrition.fi)}g</b>fibres</span></div>`:''}</div>`).join(''):'<div class="empty">Aucun repas noté aujourd’hui.</div>';
+ $('foodCountLabel').textContent=`${tm.length} repas`;$('mealList').innerHTML=tm.length?tm.slice().reverse().map(m=>`<div class="mealItem" data-meal-id="${m.id}"><div class="mealTop"><b>${m.type}</b><div class="mealTopActions"><small>${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</small></div></div>${m.photo?`<img class="mealPhoto" src="${m.photo}">`:''}<p>${esc(m.text)}</p>${m.nutrition?`<div class="mealMacros"><span><b>${Math.round(m.nutrition.kcal)}</b>kcal</span><span><b>${round(m.nutrition.p)}g</b>prot.</span><span><b>${round(m.nutrition.c)}g</b>gluc.</span><span><b>${round(m.nutrition.fat)}g</b>lip.</span><span><b>${round(m.nutrition.fi)}g</b>fibres</span></div>`:''}<div class="mealActionRow"><button class="mealIconBtn editMeal" data-id="${m.id}">Modifier</button><button class="mealIconBtn delete deleteMeal" data-id="${m.id}">Supprimer</button></div></div>`).join(''):'<div class="empty">Aucun repas noté aujourd’hui.</div>';
+ document.querySelectorAll('.deleteMeal').forEach(b=>b.onclick=()=>{if(confirm('Supprimer ce repas ?')){data.meals=data.meals.filter(m=>m.id!==b.dataset.id);save()}});
+ document.querySelectorAll('.editMeal').forEach(b=>b.onclick=()=>openMealEditor(b.dataset.id));
  const currentRecipeCat=recipeCategory||suggestedRecipeCategory(); $('recipeContext').textContent=`Suggestions pour ${categoryLabel(currentRecipeCat)} · appuie sur « Changer » pour d’autres idées.`; document.querySelectorAll('[data-recipe-cat]').forEach(b=>b.classList.toggle('active',b.dataset.recipeCat===currentRecipeCat)); const rs=selectRecipes();$('recipeIdeas').innerHTML=rs.map((r,i)=>`<div class="recipe"><div class="recipeHeader"><div><b>${r.title}</b><small>${r.meta}</small><p>${r.desc}</p></div><button data-recipe="${i}">Recette</button></div><div class="recipeDetails" id="recipe-${i}"><h4>Ingrédients</h4><ul>${r.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Préparation</h4><ol>${r.steps.map(x=>`<li>${x}</li>`).join('')}</ol><div class="recipeNutrition"><span>${r.nutrition}</span></div></div></div>`).join('');
  document.querySelectorAll('[data-recipe]').forEach(b=>b.onclick=()=>{const el=$('recipe-'+b.dataset.recipe);el.classList.toggle('open');b.textContent=el.classList.contains('open')?'Fermer':'Recette'});
  $('sportWeekTitle').textContent=`${strength.length}/2 séances`;$('sportStatusBadge').textContent=strength.length>=2?'Objectif atteint ✨':strength.length===1?'Encore 1':'À commencer';$('sportProgress').style.width=`${Math.min(100,strength.length/2*100)}%`;
@@ -226,11 +229,49 @@ document.querySelectorAll('.routine').forEach(b=>b.onclick=()=>{data.supplements
 $('addHalfWater').onclick=()=>{data.hydration[today()]=(data.hydration[today()]||0)+1;save()};
 $('addFullWater').onclick=()=>{data.hydration[today()]=(data.hydration[today()]||0)+2;save()};
 $('removeHalfWater').onclick=()=>{data.hydration[today()]=Math.max(0,(data.hydration[today()]||0)-1);save()};
+$('removeFullWater').onclick=()=>{data.hydration[today()]=Math.max(0,(data.hydration[today()]||0)-2);save()};
 const fileData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
-['quickMeal','addMeal'].forEach(id=>$(id).onclick=()=>$('mealDialog').showModal());
+
+function resetMealDialog(){
+ $('editingMealId').value='';
+ $('mealDialogTitle').textContent='Ajouter un repas';
+ $('saveMeal').textContent='Enregistrer';
+ $('mealText').value='';
+ $('mealPhotoInput').value='';
+ $('satiety').value=3;
+ $('analysisPreview').classList.add('hidden');
+}
+function openMealEditor(id){
+ const m=data.meals.find(x=>x.id===id);
+ if(!m)return;
+ $('editingMealId').value=id;
+ $('mealDialogTitle').textContent='Modifier le repas';
+ $('saveMeal').textContent='Enregistrer les modifications';
+ $('mealType').value=m.type||'Déjeuner';
+ $('mealText').value=m.text||'';
+ $('satiety').value=m.satiety||3;
+ $('analysisPreview').classList.add('hidden');
+ $('mealDialog').showModal();
+}
+
+['quickMeal','addMeal'].forEach(id=>$(id).onclick=()=>{resetMealDialog();$('mealDialog').showModal()});
 function showPreview(){const a=analyze($('mealText').value);$('analysisPreview').classList.remove('hidden');$('analysisPreview').innerHTML=a.found.length?`<b>Estimation du repas</b>${a.found.map(x=>`<div class="found"><span>${x.name} · ~${x.g} g</span><span>${Math.round(x.kcal)} kcal</span></div>`).join('')}<p><b>${Math.round(a.total.kcal)} kcal</b> · ${round(a.total.p)} g prot. · ${round(a.total.c)} g gluc. · ${round(a.total.fat)} g lip. · ${round(a.total.fi)} g fibres</p>`:`<p>Je n’ai reconnu aucun aliment. Essaie une formulation simple, par exemple “150 g de poulet, 120 g de riz, courgettes”.</p>`;return a}
 $('previewMeal').onclick=showPreview;
-$('saveMeal').onclick=async()=>{const f=$('mealPhotoInput').files[0],text=$('mealText').value.trim();if(!f&&!text)return;const a=analyze(text);data.meals.push({date:new Date().toISOString(),type:$('mealType').value,text,photo:f?await fileData(f):null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value});localStorage.setItem(STABLE_KEY,JSON.stringify(data));$('mealText').value='';$('mealPhotoInput').value='';$('analysisPreview').classList.add('hidden');$('mealDialog').close();render();go('food')};
+$('saveMeal').onclick=async()=>{
+ const f=$('mealPhotoInput').files[0],text=$('mealText').value.trim();if(!f&&!text)return;
+ const a=analyze(text),editId=$('editingMealId').value;
+ if(editId){
+   const idx=data.meals.findIndex(m=>m.id===editId);
+   if(idx>=0){
+     const previous=data.meals[idx];
+     data.meals[idx]={...previous,type:$('mealType').value,text,photo:f?await fileData(f):previous.photo||null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value};
+   }
+ }else{
+   data.meals.push({id:`meal-${Date.now()}-${Math.random().toString(36).slice(2,8)}`,date:new Date().toISOString(),type:$('mealType').value,text,photo:f?await fileData(f):null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value});
+ }
+ localStorage.setItem(STABLE_KEY,JSON.stringify(data));
+ resetMealDialog();$('mealDialog').close();render();go('food');
+};
 
 function openActivity(type){$('workoutType').value=type||'Autre';$('workoutDialog').showModal()}
 $('quickWorkout').onclick=$('openCustomWorkout').onclick=()=>openActivity('Autre');

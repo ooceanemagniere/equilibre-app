@@ -40,3 +40,11 @@ Limites :
 - cartes recettes visuellement allégées
 - fusion des deux boutons « Écrire mon repas » et « Ajouter une photo »
 - un seul bouton « Mon repas » avec description + photo facultative
+
+
+## Version 3.0.5
+- boutons + / − pour l’hydratation : 1/2 gourde ou 1 gourde complète
+- possibilité de corriger une saisie d’eau faite en double
+- boutons Modifier / Supprimer sur chaque repas
+- modification d’un repas sans perdre sa photo existante
+- identifiants stables ajoutés aux repas existants pour permettre l’édition
