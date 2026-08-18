@@ -7,7 +7,7 @@
 <title>Équilibre</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=3.0.0">
+<link rel="stylesheet" href="styles.css?v=3.0.1">
 </head>
 <body>
 <div class="app">
@@ -53,9 +53,9 @@
   <div class="card wellbeingCard">
     <div class="slider"><label>Énergie</label><input id="energy" type="range" min="1" max="5" value="3"><span id="energyVal">3/5</span></div>
     <div class="slider"><label>Humeur</label><input id="mood" type="range" min="1" max="5" value="3"><span id="moodVal">3/5</span></div>
-    <div class="slider"><label>Sommeil</label><input id="sleep" type="range" min="1" max="5" value="3"><span id="sleepVal">3/5</span></div>
+    <div class="slider"><label>Qualité sommeil</label><input id="sleep" type="range" min="1" max="5" value="3"><span id="sleepVal">3/5</span></div><div class="scaleHelp"><span>1 = très mauvais / trop peu</span><span>5 = excellent / suffisant</span></div>
     <div class="slider"><label>Stress</label><input id="stress" type="range" min="1" max="5" value="2"><span id="stressVal">2/5</span></div>
-    <div class="slider"><label>Faim</label><input id="hunger" type="range" min="1" max="5" value="3"><span id="hungerVal">3/5</span></div>
+    <div class="slider"><label>Faim physique</label><input id="hunger" type="range" min="1" max="5" value="3"><span id="hungerVal">3/5</span></div><div class="scaleHelp"><span>1 = pas faim</span><span>5 = très faim</span></div><div class="slider"><label>Envie de manger</label><input id="craving" type="range" min="1" max="5" value="2"><span id="cravingVal">2/5</span></div><div class="scaleHelp"><span>1 = aucune envie</span><span>5 = forte envie sans faim</span></div>
     <div class="slider"><label>Courbatures</label><input id="soreness" type="range" min="1" max="5" value="1"><span id="sorenessVal">1/5</span></div>
     <button class="primary" id="saveWellbeing">Enregistrer mon ressenti</button>
   </div>
@@ -213,6 +213,6 @@
 <dialog id="weightDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mon poids</h3><button data-close="weightDialog">×</button></div><label>Poids (kg)<input id="weightInput" type="number" step="0.1" value="55"></label><button class="primary" id="saveWeight">Enregistrer</button></div></dialog>
 <dialog id="measureDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mes mensurations</h3><button data-close="measureDialog">×</button></div><label>Tour de taille<input id="waistInput" type="number" step="0.1"></label><label>Hanches<input id="hipsInput" type="number" step="0.1"></label><label>Cuisse<input id="thighInput" type="number" step="0.1"></label><button class="primary" id="saveMeasure">Enregistrer</button></div></dialog>
 
-<script src="app.js?v=3.0.0"></script>
+<script src="app.js?v=3.0.1"></script>
 </body>
 </html>
