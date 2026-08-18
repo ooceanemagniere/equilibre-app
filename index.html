@@ -7,7 +7,7 @@
 <title>Équilibre</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=3.0.2">
+<link rel="stylesheet" href="styles.css?v=3.0.3">
 </head>
 <body>
 <div class="app">
@@ -124,7 +124,14 @@
   <div class="sectionHead"><h2>Mes repas</h2><span id="foodCountLabel">0 repas</span></div>
   <div id="mealList" class="stack"></div>
 
-  <div class="sectionHead"><h2>Idées pour la suite</h2><button id="refreshIdeas">Changer</button></div>
+  <div class="sectionHead"><h2>Idées de recettes</h2><button id="refreshIdeas">Changer</button></div>
+  <div class="recipeFilters" id="recipeFilters">
+    <button data-recipe-cat="breakfast">Matin</button>
+    <button data-recipe-cat="lunch">Déjeuner</button>
+    <button data-recipe-cat="dinner">Dîner</button>
+    <button data-recipe-cat="snack">Collation</button>
+  </div>
+  <p class="recipeContext" id="recipeContext"></p>
   <div id="recipeIdeas" class="stack"></div>
 </section>
 
@@ -208,6 +215,6 @@
 <dialog id="weightDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mon poids</h3><button data-close="weightDialog">×</button></div><label>Poids (kg)<input id="weightInput" type="number" step="0.1" value="55"></label><button class="primary" id="saveWeight">Enregistrer</button></div></dialog>
 <dialog id="measureDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mes mensurations</h3><button data-close="measureDialog">×</button></div><label>Tour de taille<input id="waistInput" type="number" step="0.1"></label><label>Hanches<input id="hipsInput" type="number" step="0.1"></label><label>Cuisse<input id="thighInput" type="number" step="0.1"></label><button class="primary" id="saveMeasure">Enregistrer</button></div></dialog>
 
-<script src="app.js?v=3.0.2"></script>
+<script src="app.js?v=3.0.3"></script>
 </body>
 </html>

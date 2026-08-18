@@ -17,6 +17,7 @@ function loadData(){
   return structuredClone(DEFAULT);
 }
 let recipeOffset=0;
+let recipeCategory=null;
 let data=loadData();
 function normalizeData(raw){
   const d=raw&&typeof raw==='object'?raw:{};
@@ -107,12 +108,26 @@ function analyze(text){
 function dayTotals(meals){return meals.reduce((a,m)=>{const t=m.nutrition||{};a.kcal+=t.kcal||0;a.p+=t.p||0;a.c+=t.c||0;a.fat+=t.fat||0;a.fi+=t.fi||0;return a},{kcal:0,p:0,c:0,fat:0,fi:0})}
 
 const RECIPE_BANK=[
-{title:'Poulet, semoule & légumes rôtis',meta:'25 min · complet',desc:'Simple, rassasiant et facile à ajuster selon ta faim.',ingredients:['120–150 g de poulet','120 g de semoule cuite','250 g de légumes au choix','1 c. à café d’huile d’olive','Épices, citron'],steps:['Cuire ou réchauffer la semoule.','Faire revenir le poulet avec les épices.','Rôtir ou poêler les légumes.','Assembler et ajouter citron + huile.'],nutrition:'≈ 500–600 kcal · 40 g protéines'},
-{title:'Bowl lentilles, feta, tomates & avocat',meta:'15 min · fibres',desc:'Une option fraîche et très rassasiante.',ingredients:['150 g de lentilles cuites','40 g de feta','Tomates et salade','1/2 avocat','Citron ou vinaigre'],steps:['Rincer les lentilles si besoin.','Couper les légumes et l’avocat.','Mélanger avec la feta.','Assaisonner simplement.'],nutrition:'≈ 450–550 kcal · 20 g protéines · riche en fibres'},
-{title:'Pâtes courgettes, poulet & parmesan',meta:'20 min · réconfortant',desc:'Crémeux, généreux et équilibré.',ingredients:['150 g de pâtes cuites','120 g de poulet','1 courgette','20 g de parmesan','1 c. à café d’huile'],steps:['Cuire les pâtes.','Poêler courgette + poulet.','Ajouter les pâtes et un peu d’eau de cuisson.','Finir avec le parmesan.'],nutrition:'≈ 550–650 kcal · 40 g protéines'},
-{title:'Omelette, pommes de terre & salade',meta:'15 min · rapide',desc:'Très simple quand tu ne veux pas cuisiner longtemps.',ingredients:['2 à 3 œufs','200 g de pommes de terre','Une grande salade','Tomates ou crudités','1 c. à café d’huile'],steps:['Cuire ou réchauffer les pommes de terre.','Faire l’omelette.','Préparer une grande salade.','Servir ensemble.'],nutrition:'≈ 450–550 kcal · 25 g protéines'},
-{title:'Saumon, riz & brocoli',meta:'25 min · complet',desc:'Une assiette très simple et équilibrée.',ingredients:['120–140 g de saumon','130 g de riz cuit','200 g de brocoli','Citron','Herbes'],steps:['Cuire le saumon au four ou à la poêle.','Réchauffer le riz.','Cuire le brocoli vapeur ou poêlé.','Ajouter citron et herbes.'],nutrition:'≈ 550–650 kcal · 30 g protéines'},
-{title:'Skyr, banane, avoine & amandes',meta:'5 min · collation',desc:'Parfait quand tu veux quelque chose de rapide et nourrissant.',ingredients:['150 g de skyr','1 banane','30 g de flocons d’avoine','15 g d’amandes','Cannelle'],steps:['Verser le skyr dans un bol.','Ajouter la banane en rondelles.','Ajouter avoine et amandes.','Finir avec un peu de cannelle.'],nutrition:'≈ 350–400 kcal · 22 g protéines'}
+{cat:'breakfast',title:'Porridge skyr, banane & cannelle',meta:'8 min · doux',desc:'Un petit-déjeuner rassasiant avec protéines et fibres.',ingredients:['40 g de flocons d’avoine','150 g de skyr','1/2 à 1 banane','Cannelle','Un peu de lait'],steps:['Cuire l’avoine avec le lait.','Ajouter le skyr hors du feu.','Déposer la banane et la cannelle.'],nutrition:'≈ 350–420 kcal · 22 g protéines'},
+{cat:'breakfast',title:'Tartines œufs brouillés & avocat',meta:'10 min · salé',desc:'Pour un matin salé, simple et complet.',ingredients:['2 œufs','2 tranches de pain complet','1/3 avocat','Tomates','Sel, poivre'],steps:['Griller le pain.','Cuire les œufs brouillés.','Écraser l’avocat et assembler avec les tomates.'],nutrition:'≈ 400–480 kcal · 22 g protéines'},
+{cat:'breakfast',title:'Bowl skyr, fruits rouges & granola',meta:'5 min · frais',desc:'Rapide, frais et facile à préparer.',ingredients:['170 g de skyr','100 g de fruits rouges','30 g de granola','1 c. à café de graines'],steps:['Verser le skyr.','Ajouter fruits, granola et graines.'],nutrition:'≈ 320–380 kcal · 20 g protéines'},
+{cat:'breakfast',title:'Pancakes banane & avoine',meta:'12 min · gourmand',desc:'Une option gourmande sans devenir compliquée.',ingredients:['1 banane','1 œuf','40 g de flocons d’avoine','80 g de skyr','Cannelle'],steps:['Mixer banane, œuf et avoine.','Cuire de petits pancakes.','Servir avec le skyr.'],nutrition:'≈ 380 kcal · 20 g protéines'},
+{cat:'breakfast',title:'Overnight oats pomme & amandes',meta:'5 min + repos',desc:'À préparer la veille pour un matin sans effort.',ingredients:['40 g d’avoine','120 ml de lait','100 g de skyr','1/2 pomme','10 g d’amandes'],steps:['Mélanger avoine, lait et skyr.','Réserver au frais.','Ajouter pomme et amandes le matin.'],nutrition:'≈ 360 kcal · 19 g protéines'},
+{cat:'lunch',title:'Poulet, semoule & légumes rôtis',meta:'25 min · complet',desc:'Simple, rassasiant et facile à ajuster selon ta faim.',ingredients:['120–150 g de poulet','120 g de semoule cuite','250 g de légumes','1 c. à café d’huile','Épices, citron'],steps:['Cuire la semoule.','Faire revenir le poulet.','Rôtir les légumes.','Assembler.'],nutrition:'≈ 500–600 kcal · 40 g protéines'},
+{cat:'lunch',title:'Bowl lentilles, feta & avocat',meta:'15 min · fibres',desc:'Une option fraîche et très rassasiante.',ingredients:['150 g de lentilles cuites','40 g de feta','Tomates et salade','1/2 avocat','Citron'],steps:['Rincer les lentilles.','Couper les légumes.','Assembler avec feta et avocat.'],nutrition:'≈ 450–550 kcal · 20 g protéines'},
+{cat:'lunch',title:'Wrap poulet, crudités & sauce yaourt',meta:'15 min · pratique',desc:'Facile à emporter et très modulable.',ingredients:['1 grand wrap','120 g de poulet','Crudités','2 c. à soupe de yaourt','Citron, épices'],steps:['Cuire le poulet.','Mélanger la sauce.','Garnir le wrap et rouler.'],nutrition:'≈ 450–520 kcal · 35 g protéines'},
+{cat:'lunch',title:'Salade pâtes, thon & tomates',meta:'15 min · frais',desc:'Une salade complète qui ne ressemble pas à un repas triste.',ingredients:['150 g de pâtes cuites','100 g de thon','Tomates','Concombre','Maïs','Vinaigrette légère'],steps:['Cuire puis refroidir les pâtes.','Ajouter tous les ingrédients.','Assaisonner.'],nutrition:'≈ 500 kcal · 32 g protéines'},
+{cat:'lunch',title:'Bowl saumon, riz & concombre',meta:'20 min · frais',desc:'Un bowl façon poke très simple.',ingredients:['120 g de saumon','130 g de riz cuit','Concombre','Carotte','Sauce soja','Sésame'],steps:['Cuire le saumon.','Préparer les légumes.','Assembler avec le riz et assaisonner.'],nutrition:'≈ 550–620 kcal · 30 g protéines'},
+{cat:'dinner',title:'Pâtes courgettes, poulet & parmesan',meta:'20 min · réconfortant',desc:'Crémeux, généreux et équilibré.',ingredients:['150 g de pâtes cuites','120 g de poulet','1 courgette','20 g de parmesan','1 c. à café d’huile'],steps:['Cuire les pâtes.','Poêler courgette et poulet.','Ajouter les pâtes.','Finir au parmesan.'],nutrition:'≈ 550–650 kcal · 40 g protéines'},
+{cat:'dinner',title:'Saumon, riz & brocoli',meta:'25 min · complet',desc:'Une assiette simple et équilibrée.',ingredients:['120–140 g de saumon','130 g de riz cuit','200 g de brocoli','Citron','Herbes'],steps:['Cuire le saumon.','Réchauffer le riz.','Cuire le brocoli.','Ajouter citron et herbes.'],nutrition:'≈ 550–650 kcal · 30 g protéines'},
+{cat:'dinner',title:'Omelette, pommes de terre & salade',meta:'15 min · rapide',desc:'Très simple quand tu ne veux pas cuisiner longtemps.',ingredients:['2 à 3 œufs','200 g de pommes de terre','Grande salade','Tomates','1 c. à café d’huile'],steps:['Cuire les pommes de terre.','Faire l’omelette.','Préparer la salade.','Servir ensemble.'],nutrition:'≈ 450–550 kcal · 25 g protéines'},
+{cat:'dinner',title:'Curry pois chiches, épinards & riz',meta:'25 min · végétarien',desc:'Chaud, rassasiant et riche en fibres.',ingredients:['150 g de pois chiches','Épinards','100 ml de lait de coco léger','120 g de riz cuit','Curry'],steps:['Faire revenir les épices.','Ajouter pois chiches, épinards et coco.','Laisser mijoter et servir avec le riz.'],nutrition:'≈ 500–580 kcal · 18 g protéines'},
+{cat:'dinner',title:'Tacos de poulet maison',meta:'20 min · gourmand',desc:'Un dîner plaisir qui reste facile à équilibrer.',ingredients:['2 petites tortillas','120 g de poulet','Poivrons','Salade','Yaourt citronné','Épices'],steps:['Cuire poulet et poivrons.','Préparer la sauce.','Garnir les tortillas.'],nutrition:'≈ 480–550 kcal · 35 g protéines'},
+{cat:'snack',title:'Skyr, banane & amandes',meta:'5 min · protéiné',desc:'Rapide et nourrissant quand la faim arrive.',ingredients:['150 g de skyr','1 banane','15 g d’amandes','Cannelle'],steps:['Verser le skyr.','Ajouter banane et amandes.'],nutrition:'≈ 280–330 kcal · 18 g protéines'},
+{cat:'snack',title:'Pomme, beurre de cacahuète & skyr',meta:'3 min · croquant',desc:'Sucré, rassasiant et sans préparation.',ingredients:['1 pomme','100 g de skyr','10–15 g de beurre de cacahuète'],steps:['Couper la pomme.','Servir avec skyr et beurre de cacahuète.'],nutrition:'≈ 230–280 kcal · 13 g protéines'},
+{cat:'snack',title:'Tartine fromage frais & jambon',meta:'5 min · salé',desc:'Une collation salée qui cale vraiment.',ingredients:['1 tranche de pain complet','30 g de fromage frais','1 tranche de jambon','Concombre ou tomate'],steps:['Tartiner le pain.','Ajouter jambon et crudités.'],nutrition:'≈ 220–260 kcal · 15 g protéines'},
+{cat:'snack',title:'Smoothie fruits rouges & skyr',meta:'5 min · frais',desc:'Pratique quand tu as envie de quelque chose de frais.',ingredients:['150 g de fruits rouges','120 g de skyr','100 ml de lait','1/2 banane'],steps:['Mixer tous les ingrédients.','Boire bien frais.'],nutrition:'≈ 220–270 kcal · 15 g protéines'},
+{cat:'snack',title:'Energy bowl cacao & banane',meta:'5 min · gourmand',desc:'Une petite option chocolatée avec une vraie satiété.',ingredients:['120 g de skyr','1/2 banane','1 c. à café de cacao','15 g d’avoine','10 g de noisettes'],steps:['Mélanger skyr et cacao.','Ajouter banane, avoine et noisettes.'],nutrition:'≈ 250–300 kcal · 16 g protéines'}
 ];
 
 const QUOTES=[
@@ -140,14 +155,20 @@ function foodAdvice(t){
  if(t.kcal<900)a.push(['Journée encore légère','Les apports enregistrés sont encore assez légers. Ne cherche pas à “économiser” ton prochain repas si tu as faim.']);
  return a.slice(0,3);
 }
-function selectRecipes(t){
- const priority=[];
- if(t.p<60)priority.push(RECIPE_BANK[0]);
- if(t.fi<20)priority.push(RECIPE_BANK[1]);
- if(t.kcal<1000)priority.push(RECIPE_BANK[2]);
- const rest=RECIPE_BANK.filter(r=>!priority.includes(r));
- const rotated=rest.slice(recipeOffset).concat(rest.slice(0,recipeOffset));
- return [...new Set(priority.concat(rotated))].slice(0,3);
+function suggestedRecipeCategory(){
+ const h=new Date().getHours();
+ if(h<11)return 'breakfast';
+ if(h<15)return 'lunch';
+ if(h<18)return 'snack';
+ return 'dinner';
+}
+function categoryLabel(cat){return {breakfast:'matin',lunch:'déjeuner',dinner:'dîner',snack:'collation'}[cat]||cat}
+function selectRecipes(){
+ const cat=recipeCategory||suggestedRecipeCategory();
+ const pool=RECIPE_BANK.filter(r=>r.cat===cat);
+ if(!pool.length)return [];
+ const o=recipeOffset%pool.length;
+ return pool.slice(o).concat(pool.slice(0,o)).slice(0,3);
 }
 function quoteFor(wb,tot,w){
  if(wb?.stress>=4)return '« Aujourd’hui, réduire la pression est aussi une forme de progrès. »';
@@ -183,7 +204,7 @@ function render(){
  $('proteinBar').style.width=`${Math.min(100,tot.p/80*100)}%`;$('fiberBar').style.width=`${Math.min(100,tot.fi/30*100)}%`;$('carbBar').style.width=`${Math.min(100,tot.c/220*100)}%`;$('fatBar').style.width=`${Math.min(100,tot.fat/70*100)}%`;
  $('foodGuidance').innerHTML=foodAdvice(tot).map(x=>`<div class="guide"><b>${x[0]}</b>${x[1]}</div>`).join('');
  $('foodCountLabel').textContent=`${tm.length} repas`;$('mealList').innerHTML=tm.length?tm.slice().reverse().map(m=>`<div class="mealItem"><div class="mealTop"><b>${m.type}</b><small>${new Date(m.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}</small></div>${m.photo?`<img class="mealPhoto" src="${m.photo}">`:''}<p>${esc(m.text)}</p>${m.nutrition?`<div class="mealMacros"><span><b>${Math.round(m.nutrition.kcal)}</b>kcal</span><span><b>${round(m.nutrition.p)}g</b>prot.</span><span><b>${round(m.nutrition.c)}g</b>gluc.</span><span><b>${round(m.nutrition.fat)}g</b>lip.</span><span><b>${round(m.nutrition.fi)}g</b>fibres</span></div>`:''}</div>`).join(''):'<div class="empty">Aucun repas noté aujourd’hui.</div>';
- const rs=selectRecipes(tot);$('recipeIdeas').innerHTML=rs.map((r,i)=>`<div class="recipe"><div class="recipeHeader"><div><b>${r.title}</b><small>${r.meta}</small><p>${r.desc}</p></div><button data-recipe="${i}">Recette</button></div><div class="recipeDetails" id="recipe-${i}"><h4>Ingrédients</h4><ul>${r.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Préparation</h4><ol>${r.steps.map(x=>`<li>${x}</li>`).join('')}</ol><div class="recipeNutrition"><span>${r.nutrition}</span></div></div></div>`).join('');
+ const currentRecipeCat=recipeCategory||suggestedRecipeCategory(); $('recipeContext').textContent=`Suggestions pour ${categoryLabel(currentRecipeCat)} · appuie sur « Changer » pour d’autres idées.`; document.querySelectorAll('[data-recipe-cat]').forEach(b=>b.classList.toggle('active',b.dataset.recipeCat===currentRecipeCat)); const rs=selectRecipes();$('recipeIdeas').innerHTML=rs.map((r,i)=>`<div class="recipe"><div class="recipeHeader"><div><span class="recipeCategory">${categoryLabel(r.cat)}</span><b>${r.title}</b><small>${r.meta}</small><p>${r.desc}</p></div><button data-recipe="${i}">Recette</button></div><div class="recipeDetails" id="recipe-${i}"><h4>Ingrédients</h4><ul>${r.ingredients.map(x=>`<li>${x}</li>`).join('')}</ul><h4>Préparation</h4><ol>${r.steps.map(x=>`<li>${x}</li>`).join('')}</ol><div class="recipeNutrition"><span>${r.nutrition}</span></div></div></div>`).join('');
  document.querySelectorAll('[data-recipe]').forEach(b=>b.onclick=()=>{const el=$('recipe-'+b.dataset.recipe);el.classList.toggle('open');b.textContent=el.classList.contains('open')?'Fermer':'Recette'});
  $('sportWeekTitle').textContent=`${strength.length}/2 séances`;$('sportStatusBadge').textContent=strength.length>=2?'Objectif atteint ✨':strength.length===1?'Encore 1':'À commencer';$('sportProgress').style.width=`${Math.min(100,strength.length/2*100)}%`;
  const minutes=weekActs.reduce((a,w)=>a+(+w.duration||0),0);$('movementSummary').textContent=`${minutes} min`;
@@ -221,5 +242,6 @@ $('openMeasure').onclick=()=>$('measureDialog').showModal();$('saveMeasure').onc
 $('addProgressPhoto').onclick=()=>$('progressPhotoInput').click();$('progressPhotoInput').onchange=async()=>{const f=$('progressPhotoInput').files[0];if(!f)return;data.progressPhotos=data.progressPhotos||[];data.progressPhotos.push({date:new Date().toISOString(),data:await fileData(f)});$('progressPhotoInput').value='';save()};
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 
-$('refreshIdeas').onclick=()=>{recipeOffset=(recipeOffset+3)%RECIPE_BANK.length;render()};
+$('refreshIdeas').onclick=()=>{recipeOffset+=3;render()};
+document.querySelectorAll('[data-recipe-cat]').forEach(b=>b.onclick=()=>{recipeCategory=b.dataset.recipeCat;recipeOffset=0;render()});
 render();
