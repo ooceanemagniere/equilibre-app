@@ -51,13 +51,16 @@
 
   <div class="sectionHead"><h2>Ressenti</h2><span>Aujourd’hui</span></div>
   <div class="card wellbeingCard">
-    <div class="slider"><label>Énergie</label><input id="energy" type="range" min="1" max="5" value="3"><span id="energyVal">3/5</span></div>
-    <div class="slider"><label>Humeur</label><input id="mood" type="range" min="1" max="5" value="3"><span id="moodVal">3/5</span></div>
-    <div class="slider"><label>Qualité sommeil</label><input id="sleep" type="range" min="1" max="5" value="3"><span id="sleepVal">3/5</span></div><div class="scaleHelp"><span>1 = très mauvais / trop peu</span><span>5 = excellent / suffisant</span></div>
-    <div class="slider"><label>Stress</label><input id="stress" type="range" min="1" max="5" value="2"><span id="stressVal">2/5</span></div>
-    <div class="slider"><label>Faim physique</label><input id="hunger" type="range" min="1" max="5" value="3"><span id="hungerVal">3/5</span></div><div class="scaleHelp"><span>1 = pas faim</span><span>5 = très faim</span></div><div class="slider"><label>Envie de manger</label><input id="craving" type="range" min="1" max="5" value="2"><span id="cravingVal">2/5</span></div><div class="scaleHelp"><span>1 = aucune envie</span><span>5 = forte envie sans faim</span></div>
-    <div class="slider"><label>Courbatures</label><input id="soreness" type="range" min="1" max="5" value="1"><span id="sorenessVal">1/5</span></div>
+    <div class="feelingItem"><div class="slider"><label>Énergie</label><input id="energy" type="range" min="1" max="5" value="3"><span id="energyVal">3/5</span></div><div class="scaleLegend"><span>1 · épuisée</span><span>5 · pleine d’énergie</span></div></div>
+    <div class="feelingItem"><div class="slider"><label>Humeur</label><input id="mood" type="range" min="1" max="5" value="3"><span id="moodVal">3/5</span></div><div class="scaleLegend"><span>1 · très mauvaise</span><span>5 · très bonne</span></div></div>
+    <div class="feelingItem"><div class="slider"><label>Sommeil</label><input id="sleep" type="range" min="1" max="5" value="3"><span id="sleepVal">3/5</span></div><div class="scaleLegend"><span>1 · mauvais / insuffisant</span><span>5 · réparateur</span></div></div>
+    <div class="feelingItem"><div class="slider"><label>Stress</label><input id="stress" type="range" min="1" max="5" value="2"><span id="stressVal">2/5</span></div><div class="scaleLegend"><span>1 · très calme</span><span>5 · très stressée</span></div></div>
+    <div class="feelingItem"><div class="slider"><label>Faim physique</label><input id="hunger" type="range" min="1" max="5" value="3"><span id="hungerVal">3/5</span></div><div class="scaleLegend"><span>1 · pas faim</span><span>5 · très faim</span></div></div>
+    <div class="feelingItem"><div class="slider"><label>Envie de manger</label><input id="craving" type="range" min="1" max="5" value="2"><span id="cravingVal">2/5</span></div><div class="scaleLegend"><span>1 · aucune envie</span><span>5 · forte envie / grignoter</span></div></div>
+    <div class="feelingItem"><div class="slider"><label>Courbatures</label><input id="soreness" type="range" min="1" max="5" value="1"><span id="sorenessVal">1/5</span></div><div class="scaleLegend"><span>1 · aucune</span><span>5 · très fortes</span></div></div>
+    <p class="feelingHelp">Pour la faim, note uniquement la sensation physique. « Envie de manger » permet de distinguer une envie, une habitude ou du grignotage sans vraie faim.</p>
     <button class="primary" id="saveWellbeing">Enregistrer mon ressenti</button>
+    <div id="wellbeingSaved" class="savedNotice hidden">✓ Ressenti enregistré</div>
   </div>
 
   <div class="sectionHead"><h2>Routine</h2><span>Simple</span></div>

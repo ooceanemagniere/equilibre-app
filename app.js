@@ -3,28 +3,37 @@ const STABLE_KEY='equilibre-stable';
 const OLD_KEYS=['equilibre-v2b-local','equilibre-v2a','equilibre-oceane-v1'];
 const DEFAULT={startDate:new Date().toISOString(),meals:[],workouts:[],weights:[{date:new Date().toISOString(),value:55}],measurements:[],wellbeing:{},supplements:{},progressPhotos:[]};
 
-function cleanupOldKeys(){for(const k of OLD_KEYS){try{localStorage.removeItem(k)}catch(e){}}}
 function loadData(){
   const stable=localStorage.getItem(STABLE_KEY);
-  if(stable){cleanupOldKeys();return JSON.parse(stable)}
+  if(stable) return JSON.parse(stable);
   for(const k of OLD_KEYS){
     const old=localStorage.getItem(k);
     if(old){
       const parsed=JSON.parse(old);
-      try{localStorage.setItem(STABLE_KEY,JSON.stringify(parsed));cleanupOldKeys()}catch(e){}
+      localStorage.setItem(STABLE_KEY,JSON.stringify(parsed));
       return parsed;
     }
   }
   return structuredClone(DEFAULT);
 }
 let data=loadData();
+function normalizeData(raw){
+  const d=raw&&typeof raw==='object'?raw:{};
+  d.startDate=d.startDate||new Date().toISOString();
+  d.meals=Array.isArray(d.meals)?d.meals:[];
+  d.workouts=Array.isArray(d.workouts)?d.workouts:[];
+  d.weights=Array.isArray(d.weights)&&d.weights.length?d.weights:[{date:new Date().toISOString(),value:55}];
+  d.measurements=Array.isArray(d.measurements)?d.measurements:[];
+  d.progressPhotos=Array.isArray(d.progressPhotos)?d.progressPhotos:[];
+  d.wellbeing=d.wellbeing&&typeof d.wellbeing==='object'?d.wellbeing:{};
+  d.supplements=d.supplements&&typeof d.supplements==='object'?d.supplements:{};
+  return d;
+}
+data=normalizeData(data);
+localStorage.setItem(STABLE_KEY,JSON.stringify(data));
 const $=id=>document.getElementById(id);
 const today=()=>new Date().toISOString().slice(0,10);
-function persist(){
-  try{localStorage.setItem(STABLE_KEY,JSON.stringify(data));return true}
-  catch(e){console.error(e);alert("Équilibre n’a pas pu enregistrer les données. Le stockage du navigateur est probablement plein. Les nouvelles photos sont maintenant compressées, mais il peut rester d’anciennes photos de test trop lourdes.");return false}
-}
-const save=()=>{render();persist()};
+const save=()=>{localStorage.setItem(STABLE_KEY,JSON.stringify(data));render()};
 const weekStart=()=>{const d=new Date(),n=(d.getDay()+6)%7;d.setHours(0,0,0,0);d.setDate(d.getDate()-n);return d};
 const thisWeek=iso=>new Date(iso)>=weekStart();
 const esc=s=>(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
@@ -147,7 +156,8 @@ function quoteFor(wb,tot,w){
 function coachState(w,m,wb,t){
  if(wb?.stress>=4)return['Aujourd’hui, ton objectif peut être de faire moins — mais mieux.','Ton stress est élevé. Garde les décisions simples : un repas rassasiant, un peu d’air si ça te fait du bien, et aucune obligation de “rentabiliser” la journée.'];
  if(wb?.energy<=2&&wb?.soreness>=4)return['Ton corps te demande probablement une journée plus douce.','Énergie basse + fortes courbatures : marche tranquille, mobilité ou repos sont parfaitement cohérents aujourd’hui.'];
- if(wb?.hunger>=4&&t.kcal<1200)return['Ta faim physique mérite d’être écoutée.','Tes apports enregistrés semblent encore légers et ta faim physique est haute. Cherche un vrai repas ou une collation complète plutôt que d’essayer de tenir.']; if(wb?.craving>=4&&wb?.hunger<=2)return['Tu as surtout envie de manger, sans grande faim physique.','Ce n’est pas un problème à corriger. Tu peux choisir quelque chose qui te fait vraiment plaisir, le manger consciemment, puis voir si l’envie retombe.'];
+ if(wb?.hunger>=4&&t.kcal<1200)return['Ta faim mérite d’être écoutée.','Tes apports enregistrés semblent encore légers et ta faim physique est haute. Cherche un vrai repas ou une collation complète plutôt que d’essayer de tenir.'];
+ if((wb?.craving||0)>=4&&(wb?.hunger||0)<=2)return['Tu as surtout envie de manger, sans grande faim physique.','Aucune interdiction : tu peux manger quelque chose si tu en as envie. Mais comme ta faim physique est basse, prends un instant pour choisir ce qui te ferait vraiment plaisir plutôt que de grignoter machinalement.'];
  if(w>=2)return['Objectif sportif atteint ✨','Tes deux séances de renforcement sont faites. Une marche ou une autre activité peut être agréable, mais tu n’as rien à rattraper.'];
  if(m===0)return['Commence petit.','Une seule action utile aujourd’hui suffit : noter un repas, marcher un peu ou planifier ta prochaine séance.'];
  if(t.p<50)return['Ta journée a surtout besoin de simplicité.','Pour le prochain repas, pense d’abord à une source de protéines et à quelque chose qui te rassasie vraiment.'];
@@ -171,31 +181,21 @@ function render(){
  const minutes=weekActs.reduce((a,w)=>a+(+w.duration||0),0);$('movementSummary').textContent=`${minutes} min`;
  $('workoutList').innerHTML=weekActs.length?weekActs.slice().reverse().map(w=>`<div class="mealItem"><div class="mealTop"><b>${esc(w.type)}</b><small>${new Date(w.date).toLocaleDateString('fr-FR')}</small></div><p>${w.duration} min${w.distance?` · ${w.distance} km`:''}${w.pace?` · ${esc(w.pace)}`:''} · ${esc(w.feeling||'Bien')}</p>${w.note?`<p>${esc(w.note)}</p>`:''}</div>`).join(''):'<div class="empty">Aucune activité enregistrée cette semaine.</div>';
  const ws=data.weights.slice(-10);$('latestWeight').textContent=ws.length?`${ws.at(-1).value.toFixed(1)} kg`:'—';$('totalWorkouts').textContent=data.workouts.length;const active=new Set([...data.meals.map(x=>x.date.slice(0,10)),...data.workouts.map(x=>x.date.slice(0,10)),...Object.keys(data.supplements)]);$('consistency').textContent=`${Math.min(100,Math.round(active.size/Math.max(1,days+1)*100))}%`;drawWeight(ws);
- const lm=data.measurements.at(-1);$('latestWaist').textContent=lm?.waist?`${lm.waist} cm`:'—';$('latestHips').textContent=lm?.hips?`${lm.hips} cm`:'—';$('latestThigh').textContent=lm?.thigh?`${lm.thigh} cm`:'—';$('progressPhotos').innerHTML=(data.progressPhotos||[]).slice(-6).reverse().map(p=>`<img src="${p.data}">`).join('');$('sinceText').textContent=days<3?'Tes progrès apparaîtront ici avec le temps.':`${days+1} jours de suivi · ${data.workouts.length} activité${data.workouts.length>1?'s':''} · ${data.meals.length} repas notés.`;
+ const lm=(data.measurements||[]).at(-1);$('latestWaist').textContent=lm?.waist?`${lm.waist} cm`:'—';$('latestHips').textContent=lm?.hips?`${lm.hips} cm`:'—';$('latestThigh').textContent=lm?.thigh?`${lm.thigh} cm`:'—';$('progressPhotos').innerHTML=(data.progressPhotos||[]).slice(-6).reverse().map(p=>`<img src="${p.data}">`).join('');$('sinceText').textContent=days<3?'Tes progrès apparaîtront ici avec le temps.':`${days+1} jours de suivi · ${data.workouts.length} activité${data.workouts.length>1?'s':''} · ${data.meals.length} repas notés.`;
  const cs=coachState(strength.length,tm.length,wb,tot),q=quoteFor(wb,tot,strength.length);$('coachPreviewTitle').textContent=cs[0];$('coachPreviewText').textContent=cs[1];$('coachQuote').textContent=q;$('coachMainTitle').textContent=cs[0];$('coachMainText').textContent=cs[1];$('coachMainQuote').textContent=q;
 }
 ['energy','mood','sleep','stress','hunger','craving','soreness'].forEach(k=>$(k).oninput=e=>$(k+'Val').textContent=`${e.target.value}/5`);
-$('saveWellbeing').onclick=()=>{data.wellbeing[today()]={energy:+$('energy').value,mood:+$('mood').value,sleep:+$('sleep').value,stress:+$('stress').value,hunger:+$('hunger').value,craving:+$('craving').value,soreness:+$('soreness').value};save()};
+$('saveWellbeing').onclick=()=>{
+ data.wellbeing[today()]={energy:+$('energy').value,mood:+$('mood').value,sleep:+$('sleep').value,stress:+$('stress').value,hunger:+$('hunger').value,craving:+$('craving').value,soreness:+$('soreness').value};
+ localStorage.setItem(STABLE_KEY,JSON.stringify(data));render();
+ const n=$('wellbeingSaved');n.classList.remove('hidden');setTimeout(()=>n.classList.add('hidden'),1800);
+};
 document.querySelectorAll('.routine').forEach(b=>b.onclick=()=>{data.supplements[today()]=data.supplements[today()]||{};data.supplements[today()][b.dataset.supp]=!data.supplements[today()][b.dataset.supp];save()});
-const fileData=f=>new Promise((res,rej)=>{
-  const r=new FileReader();
-  r.onload=()=>{
-    const img=new Image();
-    img.onload=()=>{
-      const max=900,scale=Math.min(1,max/Math.max(img.width,img.height));
-      const c=document.createElement('canvas');
-      c.width=Math.round(img.width*scale);c.height=Math.round(img.height*scale);
-      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
-      res(c.toDataURL('image/jpeg',0.72));
-    };
-    img.onerror=()=>res(r.result);img.src=r.result;
-  };
-  r.onerror=rej;r.readAsDataURL(f);
-});
+const fileData=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)});
 ['quickMeal','addMealText','addMealPhoto'].forEach(id=>$(id).onclick=()=>$('mealDialog').showModal());
 function showPreview(){const a=analyze($('mealText').value);$('analysisPreview').classList.remove('hidden');$('analysisPreview').innerHTML=a.found.length?`<b>Estimation du repas</b>${a.found.map(x=>`<div class="found"><span>${x.name} · ~${x.g} g</span><span>${Math.round(x.kcal)} kcal</span></div>`).join('')}<p><b>${Math.round(a.total.kcal)} kcal</b> · ${round(a.total.p)} g prot. · ${round(a.total.c)} g gluc. · ${round(a.total.fat)} g lip. · ${round(a.total.fi)} g fibres</p>`:`<p>Je n’ai reconnu aucun aliment. Essaie une formulation simple, par exemple “150 g de poulet, 120 g de riz, courgettes”.</p>`;return a}
 $('previewMeal').onclick=showPreview;
-$('saveMeal').onclick=async()=>{const f=$('mealPhotoInput').files[0],text=$('mealText').value.trim();if(!f&&!text)return;const a=analyze(text);data.meals.push({date:new Date().toISOString(),type:$('mealType').value,text,photo:f?await fileData(f):null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value});$('mealText').value='';$('mealPhotoInput').value='';$('analysisPreview').classList.add('hidden');$('mealDialog').close();save()};
+$('saveMeal').onclick=async()=>{const f=$('mealPhotoInput').files[0],text=$('mealText').value.trim();if(!f&&!text)return;const a=analyze(text);data.meals.push({date:new Date().toISOString(),type:$('mealType').value,text,photo:f?await fileData(f):null,nutrition:a.total,foods:a.found,satiety:+$('satiety').value});localStorage.setItem(STABLE_KEY,JSON.stringify(data));$('mealText').value='';$('mealPhotoInput').value='';$('analysisPreview').classList.add('hidden');$('mealDialog').close();render();go('food')};
 
 function openActivity(type){$('workoutType').value=type||'Autre';$('workoutDialog').showModal()}
 $('quickWorkout').onclick=$('openCustomWorkout').onclick=()=>openActivity('Autre');
@@ -211,7 +211,7 @@ function reply(raw){
  const t=raw.toLowerCase(),week=data.workouts.filter(x=>thisWeek(x.date)),strength=week.filter(w=>/musculation|full body|renforcement/i.test(w.type)),meals=data.meals.filter(x=>x.date.slice(0,10)===today()),tot=dayTotals(meals),wb=data.wellbeing[today()]||{};
  if(t.includes('stress')||t.includes('angoiss')||t.includes('pression'))return wb.stress>=4?'Ton stress est déjà haut aujourd’hui. Je choisirais une seule priorité : manger normalement, respirer un peu dehors si tu peux, et retirer une obligation plutôt qu’en ajouter une.':'Tu as peut-être besoin de simplifier la journée. Choisis une petite action concrète, puis laisse le reste tranquille pour l’instant.';
  if(t.includes('motivation')||t.includes('zéro')||t.includes('zero'))return strength.length>=2?'Tes deux séances sont déjà faites : tu n’as rien à prouver aujourd’hui. Une marche si elle te fait du bien, sinon rien à rattraper.':wb.energy<=2?'Avec ton énergie basse, vise 15 à 25 minutes très faciles ou reporte sans culpabiliser. La régularité se construit aussi en adaptant.':'Fais une version courte : 25 à 30 minutes. Tu peux arrêter après l’échauffement si tu n’es toujours pas dedans.';
- if(t.includes('faim'))return wb.hunger>=4&&tot.kcal<1200?'Ta faim physique est haute et tes apports enregistrés restent légers. Mange quelque chose de consistant maintenant : protéines + glucides + un fruit ou des légumes.':'Si tu as faim physiquement, mange. Essaie simplement de choisir quelque chose qui te rassasie vraiment.'; if(t.includes('envie')||t.includes('grignot'))return wb.craving>=4&&wb.hunger<=2?'Tu as surtout une forte envie de manger sans grande faim physique. Tu peux choisir quelque chose qui te fait vraiment plaisir, le manger consciemment, puis voir si l’envie retombe.':'Une envie de manger peut exister sans faim : plaisir, habitude, ennui, stress… Tu peux la satisfaire simplement ou attendre quelques minutes pour voir ce dont tu as réellement envie.';
+ if(t.includes('faim'))return wb.hunger>=4&&tot.kcal<1200?'Ta faim est haute et tes apports enregistrés restent légers. Mange quelque chose de consistant maintenant : protéines + glucides + un fruit ou des légumes.':'Si tu as faim, mange. Essaie simplement de choisir quelque chose qui te rassasie vraiment plutôt qu’un petit truc qui te laissera encore faim.';
  if(t.includes('repos')||t.includes('reposer')||t.includes('fatigu')||t.includes('courbature'))return wb.energy<=2||wb.soreness>=4?'Oui, une journée douce est cohérente avec ce que tu as enregistré. Une marche tranquille ou quelques étirements sont déjà suffisants si tu en as envie.':'Tu peux bouger si tu en as envie, mais tu n’as pas besoin d’une grosse séance. Une activité légère est une très bonne option.';
  if(t.includes('resto'))return 'Au restaurant, choisis ce qui te fait envie. Garde seulement un repère simple : une source de protéines + un accompagnement qui te rassasie. Aucun besoin de compenser avant ou après.';
  if(t.includes('30'))return 'En 30 minutes : 5 min d’échauffement, presse à cuisses, tirage vertical, hip thrust, chest press, puis 3 minutes de gainage. Court mais très valable.';
