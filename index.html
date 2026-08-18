@@ -7,7 +7,7 @@
 <title>Équilibre</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.svg">
-<link rel="stylesheet" href="styles.css?v=3.0.3">
+<link rel="stylesheet" href="styles.css?v=3.0.4">
 </head>
 <body>
 <div class="app">
@@ -45,7 +45,7 @@
 
   <div class="sectionHead"><h2>Ta journée</h2><button data-go="food">Voir l’alimentation</button></div>
   <div class="grid2">
-    <button class="action" id="quickMeal">🥗<b>Ajouter un repas</b><small>Texte ou photo</small></button>
+    <button class="action" id="quickMeal">🥗<b>Mon repas</b><small>Description + photo facultative</small></button>
     <button class="action" id="quickWorkout">🏃🏼‍♀️<b>Ajouter une activité</b><small>Sport, marche, course…</small></button>
   </div>
 
@@ -111,9 +111,12 @@
     <p class="hint">Plus tu précises les quantités, plus le calcul est utile. Une estimation reste une estimation.</p>
   </div>
 
-  <div class="grid2 gapTop">
-    <button class="action" id="addMealText">✏️<b>Écrire mon repas</b><small>Ex. 2 œufs, 80 g de pain…</small></button>
-    <button class="action" id="addMealPhoto">📸<b>Ajouter une photo</b><small>Photo conservée dans ton journal</small></button>
+  <div class="gapTop">
+    <button class="action singleMealAction" id="addMeal">
+      🥗
+      <b>Mon repas</b>
+      <small>Décris ce que tu as mangé et ajoute une photo si tu veux.</small>
+    </button>
   </div>
 
   <div class="card gapTop">
@@ -124,14 +127,7 @@
   <div class="sectionHead"><h2>Mes repas</h2><span id="foodCountLabel">0 repas</span></div>
   <div id="mealList" class="stack"></div>
 
-  <div class="sectionHead"><h2>Idées de recettes</h2><button id="refreshIdeas">Changer</button></div>
-  <div class="recipeFilters" id="recipeFilters">
-    <button data-recipe-cat="breakfast">Matin</button>
-    <button data-recipe-cat="lunch">Déjeuner</button>
-    <button data-recipe-cat="dinner">Dîner</button>
-    <button data-recipe-cat="snack">Collation</button>
-  </div>
-  <p class="recipeContext" id="recipeContext"></p>
+  <div class="sectionHead"><h2>Idées pour la suite</h2><button id="refreshIdeas">Changer</button></div>
   <div id="recipeIdeas" class="stack"></div>
 </section>
 
@@ -215,6 +211,6 @@
 <dialog id="weightDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mon poids</h3><button data-close="weightDialog">×</button></div><label>Poids (kg)<input id="weightInput" type="number" step="0.1" value="55"></label><button class="primary" id="saveWeight">Enregistrer</button></div></dialog>
 <dialog id="measureDialog"><div class="modal"><div class="modalHead"><h3>Ajouter mes mensurations</h3><button data-close="measureDialog">×</button></div><label>Tour de taille<input id="waistInput" type="number" step="0.1"></label><label>Hanches<input id="hipsInput" type="number" step="0.1"></label><label>Cuisse<input id="thighInput" type="number" step="0.1"></label><button class="primary" id="saveMeasure">Enregistrer</button></div></dialog>
 
-<script src="app.js?v=3.0.3"></script>
+<script src="app.js?v=3.0.4"></script>
 </body>
 </html>

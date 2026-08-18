@@ -33,3 +33,10 @@ Limites :
 - petit mot contextuel conservé sur l’accueil
 - bouton « Changer » corrigé pour faire réellement tourner les idées de recettes
 - navigation ramenée à 4 onglets
+
+
+## Version 3.0.4
+- suppression du libellé de catégorie répété dans chaque carte recette
+- cartes recettes visuellement allégées
+- fusion des deux boutons « Écrire mon repas » et « Ajouter une photo »
+- un seul bouton « Mon repas » avec description + photo facultative
